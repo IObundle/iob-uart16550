@@ -49,4 +49,4 @@ void uart_sendfile(char* file_name, int file_size, char *mem);
 char uart_getc();
 
 //Receive file
-int uart_recvfile(char* file_name, char **mem);
+int uart_recvfile(char* file_name, char *mem);

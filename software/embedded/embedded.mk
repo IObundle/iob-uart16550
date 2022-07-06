@@ -1,6 +1,6 @@
-ifeq ($(filter UART, $(SW_MODULES)),)
+ifeq ($(filter UART16550, $(SW_MODULES)),)
 
-SW_MODULES+=UART
+SW_MODULES+=UART16550
 
 include $(UART16550_DIR)/software/software.mk
 
