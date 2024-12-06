@@ -237,6 +237,17 @@ module uart_top (
    wire [                     3:0] rstate;
 `endif
 
+   wire [              2-1:0] lsbs_encoded;
+   // Ignore 2 lsbs from address. Instead use generate lsbs based on 'sel' signal
+   wire [uart_addr_width-1:0] wb_adr_lsbs = {wb_adr_i[31:2], lsbs_encoded};
+
+   iob_prio_enc #(
+      .W(4)
+   ) iob_prio_enc_inst (
+      .unencoded_i(wb_sel_i),
+      .encoded_o  (lsbs_encoded)
+   );
+
 `ifdef DATA_BUS_WIDTH_8
    ////  WISHBONE interface module
    uart_wb wb_interface (
@@ -263,6 +274,8 @@ module uart_top (
       .wb_rst_i       (wb_rst_i),
       .wb_dat_i       (wb_dat_i),
       .wb_dat_o       (wb_dat_o),
+      .wb_dat8_i      (8'b0),
+      .wb_dat8_o      (),
       .wb_dat_bypass_i(wb_dat32_i),
       .wb_dat_bypass_o(wb_dat32_o),
       .wb_sel_i       (wb_sel_i),
@@ -271,7 +284,7 @@ module uart_top (
       .wb_stb_i       (wb_stb_i),
       .wb_cyc_i       (wb_cyc_i),
       .wb_ack_o       (wb_ack_o),
-      .wb_adr_i       (wb_adr_i),
+      .wb_adr_i       (wb_adr_lsbs),
       .wb_adr_int     (wb_adr_int),
       .we_o           (we_o),
       .re_o           (re_o)

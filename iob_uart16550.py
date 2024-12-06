@@ -69,7 +69,11 @@ class iob_uart16550(iob_module):
     @classmethod
     def _setup_ios(cls):
         cls.ios += [
-            {"name": "iob_s_port", "descr": "CPU native interface", "ports": []},
+            {
+                "name": "iob_s_port",
+                "descr": "CPU native interface",
+                "ports": [],
+            },  # TODO: Remove 2 lsbs from addr width.
             {
                 "name": "general",
                 "descr": "GENERAL INTERFACE SIGNALS",
