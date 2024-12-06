@@ -210,8 +210,8 @@ module uart_top (
    wire [uart_data_width-1:0] wb_dat_i;
    wire [uart_data_width-1:0] wb_dat_o;
 
-   wire [                7:0] wb_dat8_i;  // 8-bit internal data input
-   wire [                7:0] wb_dat8_o;  // 8-bit internal data output
+   wire [             32-1:0] wb_dat32_i;  // 32-bit internal data input
+   wire [             32-1:0] wb_dat32_o;  // 32-bit internal data output
    wire [               31:0] wb_dat32_o;  // debug interface 32-bit output
    wire [                3:0] wb_sel_i;  // WISHBONE select signal
    wire [uart_addr_width-1:0] wb_adr_int;
@@ -259,22 +259,22 @@ module uart_top (
    );
 `else
    uart_wb wb_interface (
-      .clk       (wb_clk_i),
-      .wb_rst_i  (wb_rst_i),
-      .wb_dat_i  (wb_dat_i),
-      .wb_dat_o  (wb_dat_o),
-      .wb_dat8_i (wb_dat8_i),
-      .wb_dat8_o (wb_dat8_o),
-      .wb_sel_i  (wb_sel_i),
-      .wb_dat32_o(wb_dat32_o),
-      .wb_we_i   (wb_we_i),
-      .wb_stb_i  (wb_stb_i),
-      .wb_cyc_i  (wb_cyc_i),
-      .wb_ack_o  (wb_ack_o),
-      .wb_adr_i  (wb_adr_i),
-      .wb_adr_int(wb_adr_int),
-      .we_o      (we_o),
-      .re_o      (re_o)
+      .clk            (wb_clk_i),
+      .wb_rst_i       (wb_rst_i),
+      .wb_dat_i       (wb_dat_i),
+      .wb_dat_o       (wb_dat_o),
+      .wb_dat_bypass_i(wb_dat32_i),
+      .wb_dat_bypass_o(wb_dat32_o),
+      .wb_sel_i       (wb_sel_i),
+      .wb_dat32_o     (wb_dat32_o),
+      .wb_we_i        (wb_we_i),
+      .wb_stb_i       (wb_stb_i),
+      .wb_cyc_i       (wb_cyc_i),
+      .wb_ack_o       (wb_ack_o),
+      .wb_adr_i       (wb_adr_i),
+      .wb_adr_int     (wb_adr_int),
+      .we_o           (we_o),
+      .re_o           (re_o)
    );
 `endif
 
@@ -283,8 +283,8 @@ module uart_top (
       .clk         (wb_clk_i),
       .wb_rst_i    (wb_rst_i),
       .wb_addr_i   (wb_adr_int),
-      .wb_dat_i    (wb_dat8_i),
-      .wb_dat_o    (wb_dat8_o),
+      .wb_dat_i    (wb_dat32_i),
+      .wb_dat_o    (wb_dat32_o),
       .wb_we_i     (we_o),
       .wb_re_i     (re_o),
       .modem_inputs({cts_pad_i, dsr_pad_i, ri_pad_i, dcd_pad_i}),
