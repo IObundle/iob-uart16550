@@ -3,9 +3,7 @@
 `include "uart_defines.vh"
 `include "iob_uart16550_conf.vh"
 
-module iob_uart16550 #(
-   `include "iob_uart16550_params.vs"
-) (
+module iob_uart16550 (
    `include "iob_uart16550_io.vs"
 );
 
@@ -28,7 +26,7 @@ module iob_uart16550 #(
       .cke_i       (cke_i),
       .arst_i      (arst_i),
       // IOb-bus input/outputs
-      .iob_valid_i(iob_valid_i),
+      .iob_valid_i (iob_valid_i),
       .iob_addr_i  (iob_addr_i[`UART_ADDR_WIDTH-1:0]),
       .iob_wdata_i (iob_wdata_i),
       .iob_wstrb_i (iob_wstrb_i),
@@ -63,10 +61,10 @@ module iob_uart16550 #(
       .baud1_o  (),
 `endif
       // UART signals
-      .srx_pad_i(rxd_i),
-      .stx_pad_o(txd_o),
-      .rts_pad_o(rts_o),
-      .cts_pad_i(cts_i),
+      .srx_pad_i(rs232_rxd_i),
+      .stx_pad_o(rs232_txd_o),
+      .rts_pad_o(rs232_rts_o),
+      .cts_pad_i(rs232_cts_i),
       .dtr_pad_o(),
       .dsr_pad_i(1'b1),
       .ri_pad_i (1'b0),

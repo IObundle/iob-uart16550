@@ -4,9 +4,8 @@
 #include "iob-uart.h"
 #include <stdint.h>
 
-int main()
-{
-  uart_init(UART16550_BASE,FREQ/(16*BAUD));
+int main() {
+  uart_init(UART16550_BASE, FREQ / (16 * BAUD));
   /*
   //test hex
   uart_puts("\ntest hex\n");
@@ -68,9 +67,9 @@ int main()
   printf("%lld\n\n", -(1LL<<32));
   printf("%lld\n\n", -(1LL<<33));
   */
-  //test floats
-  int x = 0b00000000100000000000000000000000; //smallest normal
-  int y = 0b01111111011111111111111111111111; //largest normal
+  // test floats
+  int x = 0b00000000100000000000000000000000; // smallest normal
+  int y = 0b01111111011111111111111111111111; // largest normal
 
   printf("%f\n", *((float *)&x));
   printf("%f\n", *((float *)&y));
@@ -79,5 +78,4 @@ int main()
   printf("%f\n", -1000000.0);
   printf("%f\n", 0.000000000001);
   printf("%f\n", 10000000000.0);
-
 }
