@@ -266,8 +266,8 @@ module uart_regs (
    input clk;
    input wb_rst_i;
    input [`UART_ADDR_WIDTH-1:0] wb_addr_i;
-   input [7:0] wb_dat_i;
-   output [7:0] wb_dat_o;
+   input [32-1:0] wb_dat_i;
+   output [32-1:0] wb_dat_o;
    input wb_we_i;
    input wb_re_i;
 
@@ -310,10 +310,10 @@ module uart_regs (
    wire                        srx_pad_i;
    wire                        srx_pad;
 
-   reg  [                 7:0] wb_dat_o;
+   reg  [              32-1:0] wb_dat_o;
 
    wire [`UART_ADDR_WIDTH-1:0] wb_addr_i;
-   wire [                 7:0] wb_dat_i;
+   wire [              32-1:0] wb_dat_i;
 
 
    reg  [                 3:0] ier;
@@ -352,55 +352,55 @@ module uart_regs (
    // ASSINGS
    //
 
-   assign lsr[7:0]                                    = {lsr7r, lsr6r, lsr5r, lsr4r, lsr3r, lsr2r, lsr1r, lsr0r};
+   assign lsr[7:0] = {lsr7r, lsr6r, lsr5r, lsr4r, lsr3r, lsr2r, lsr1r, lsr0r};
 
    assign {cts_pad_i, dsr_pad_i, ri_pad_i, dcd_pad_i} = modem_inputs;
-   assign {cts, dsr, ri, dcd}                         = ~{cts_pad_i, dsr_pad_i, ri_pad_i, dcd_pad_i};
+   assign {cts, dsr, ri, dcd} = ~{cts_pad_i, dsr_pad_i, ri_pad_i, dcd_pad_i};
 
    assign {cts_c, dsr_c, ri_c, dcd_c}                 = loopback ? {mcr[`UART_MC_RTS], mcr[`UART_MC_DTR], mcr[`UART_MC_OUT1], mcr[`UART_MC_OUT2]} : {cts_pad_i, dsr_pad_i, ri_pad_i, dcd_pad_i};
 
-   assign dlab                                        = lcr[`UART_LC_DL];
-   assign loopback                                    = mcr[4];
+   assign dlab = lcr[`UART_LC_DL];
+   assign loopback = mcr[4];
 
    // assign modem outputs
    //assign rts_pad_o                                   = ~mcr[`UART_MC_RTS];
-   assign dtr_pad_o                                   = ~mcr[`UART_MC_DTR];
+   assign dtr_pad_o = ~mcr[`UART_MC_DTR];
 
    wire rf_overrun;
    // RTS mod: This signal is now controlled purely by hardware.
-   assign rts_pad_o                                   = ~rf_overrun; //TODO: Maybe use ~FIFO_FULL instead?
+   assign rts_pad_o = ~rf_overrun;  //TODO: Maybe use ~FIFO_FULL instead?
 
    // Interrupt signals
-   wire                            rls_int;  // receiver line status interrupt
-   wire                            rda_int;  // receiver data available interrupt
-   wire                            ti_int;  // timeout indicator interrupt
-   wire                            thre_int;  // transmitter holding register empty interrupt
-   wire                            ms_int;  // modem status interrupt
+   wire rls_int;  // receiver line status interrupt
+   wire rda_int;  // receiver data available interrupt
+   wire ti_int;  // timeout indicator interrupt
+   wire thre_int;  // transmitter holding register empty interrupt
+   wire ms_int;  // modem status interrupt
 
    // FIFO signals
-   reg                             tf_push;
-   reg                             rf_pop;
+   reg tf_push;
+   reg rf_pop;
    wire [`UART_FIFO_REC_WIDTH-1:0] rf_data_out;
-   wire                            rf_error_bit;  // an error (parity or framing) is inside the fifo
+   wire rf_error_bit;  // an error (parity or framing) is inside the fifo
    wire [`UART_FIFO_COUNTER_W-1:0] rf_count;
    wire [`UART_FIFO_COUNTER_W-1:0] tf_count;
-   wire [                     2:0] tstate;
-   wire [                     3:0] rstate;
-   wire [                     9:0] counter_t;
+   wire [2:0] tstate;
+   wire [3:0] rstate;
+   wire [9:0] counter_t;
 
    wire                            thre_set_en;  // THRE status is delayed one character time when a character is written to fifo.
    reg  [                     7:0] block_cnt;  // While counter counts, THRE status is blocked (delayed one character cycle)
-   reg  [                     7:0] block_value;  // One character length minus stop bit
+   reg [7:0] block_value;  // One character length minus stop bit
 
    // Transmitter Instance
-   wire                            serial_out;
+   wire serial_out;
 
    uart_transmitter transmitter (
       .clk      (clk),
       .wb_rst_i (wb_rst_i),
       .lcr      (lcr),
       .tf_push  (tf_push),
-      .wb_dat_i (wb_dat_i),
+      .wb_dat_i (wb_dat_i[0*8+:8]),
       //.enable   (enable),
       // CTS mod: Transmitter only works when CTS is high (controlled purely by hardware)
       .enable   (enable && cts_pad_i),
@@ -456,14 +456,19 @@ module uart_regs (
             or wb_re_i)  // asynchrounous reading
        begin
       case (wb_addr_i)
-         `UART_REG_RB: wb_dat_o = dlab ? dl[`UART_DL1] : rf_data_out[10:3];
-         `UART_REG_IE: wb_dat_o = dlab ? dl[`UART_DL2] : ier;
-         `UART_REG_II: wb_dat_o = {4'b1100, iir};
-         `UART_REG_LC: wb_dat_o = lcr;
-         `UART_REG_LS: wb_dat_o = lsr;
-         `UART_REG_MS: wb_dat_o = msr;
-         `UART_REG_SR: wb_dat_o = scratch;
-         default:      wb_dat_o = 8'b0;  // ??
+         `UART_REG_RB, `UART_REG_IE, `UART_REG_II, `UART_REG_LC: wb_dat_o = {
+            lcr,
+            {4'b1100, iir},
+            dlab ? dl[`UART_DL2] : ier,
+            dlab ? dl[`UART_DL1] : rf_data_out[10:3]
+         };
+         `UART_REG_LS, `UART_REG_MS, `UART_REG_SR: wb_dat_o = {
+            scratch,
+            msr,
+            lsr,
+            8'b0
+         };
+         default:      wb_dat_o = 32'b0;  // ??
       endcase  // case(wb_addr_i)
    end  // always @ (dl or dlab or ier or iir or scratch...
 
@@ -473,7 +478,8 @@ module uart_regs (
       if (wb_rst_i) rf_pop <= #1 0;
       else if (rf_pop)  // restore the signal to 0 after one clock cycle
          rf_pop <= #1 0;
-      else if (wb_re_i && wb_addr_i == `UART_REG_RB && !dlab) rf_pop <= #1 1;  // advance read pointer
+      else if (wb_re_i && wb_addr_i == `UART_REG_RB && !dlab)
+         rf_pop <= #1 1;  // advance read pointer
    end
 
    wire lsr_mask_condition;
@@ -512,7 +518,7 @@ module uart_regs (
    // Line Control Register
    always @(posedge clk or posedge wb_rst_i)
       if (wb_rst_i) lcr <= #1 8'b00000011;  // 8n1 setting
-      else if (wb_we_i && wb_addr_i == `UART_REG_LC) lcr <= #1 wb_dat_i;
+      else if (wb_we_i && wb_addr_i == `UART_REG_LC) lcr <= #1 wb_dat_i[3*8+:8];
 
    // Interrupt Enable Register or UART_DL2
    always @(posedge clk or posedge wb_rst_i)
@@ -521,8 +527,8 @@ module uart_regs (
          dl[`UART_DL2] <= #1 8'b0;
       end else if (wb_we_i && wb_addr_i == `UART_REG_IE)
          if (dlab) begin
-            dl[`UART_DL2] <= #1 wb_dat_i;
-         end else ier <= #1 wb_dat_i[3:0];  // ier uses only 4 lsb
+            dl[`UART_DL2] <= #1 wb_dat_i[1*8+:8];
+         end else ier <= #1 wb_dat_i[1*8+:4];  // ier uses only 4 lsb
 
 
    // FIFO Control Register and rx_reset, tx_reset signals
@@ -532,9 +538,9 @@ module uart_regs (
          rx_reset <= #1 0;
          tx_reset <= #1 0;
       end else if (wb_we_i && wb_addr_i == `UART_REG_FC) begin
-         fcr      <= #1 wb_dat_i[7:6];
-         rx_reset <= #1 wb_dat_i[1];
-         tx_reset <= #1 wb_dat_i[2];
+         fcr      <= #1 wb_dat_i[2*8+6+:2];
+         rx_reset <= #1 wb_dat_i[2*8+1+:1];
+         tx_reset <= #1 wb_dat_i[2*8+2+:1];
       end else begin
          rx_reset <= #1 0;
          tx_reset <= #1 0;
@@ -543,13 +549,13 @@ module uart_regs (
    // Modem Control Register
    always @(posedge clk or posedge wb_rst_i)
       if (wb_rst_i) mcr <= #1 5'b0;
-      else if (wb_we_i && wb_addr_i == `UART_REG_MC) mcr <= #1 wb_dat_i[4:0];
+      else if (wb_we_i && wb_addr_i == `UART_REG_MC) mcr <= #1 wb_dat_i[0*8+:4];
 
    // Scratch register
    // Line Control Register
    always @(posedge clk or posedge wb_rst_i)
       if (wb_rst_i) scratch <= #1 0;  // 8n1 setting
-      else if (wb_we_i && wb_addr_i == `UART_REG_SR) scratch <= #1 wb_dat_i;
+      else if (wb_we_i && wb_addr_i == `UART_REG_SR) scratch <= #1 wb_dat_i[3*8+:8];
 
    // TX_FIFO or UART_DL1
    always @(posedge clk or posedge wb_rst_i)
@@ -559,7 +565,7 @@ module uart_regs (
          start_dlc     <= #1 1'b0;
       end else if (wb_we_i && wb_addr_i == `UART_REG_TR)
          if (dlab) begin
-            dl[`UART_DL1] <= #1 wb_dat_i;
+            dl[`UART_DL1] <= #1 wb_dat_i[0*8+:8];
             start_dlc     <= #1 1'b1;  // enable DL counter
             tf_push       <= #1 1'b0;
          end else begin
@@ -593,7 +599,7 @@ module uart_regs (
       end else begin
          msr[`UART_MS_DDCD:`UART_MS_DCTS] <= #1 msi_reset ? 4'b0 : msr[`UART_MS_DDCD:`UART_MS_DCTS] | ({dcd, ri, dsr, cts} ^ delayed_modem_signals[3:0]);
          msr[`UART_MS_CDCD:`UART_MS_CCTS] <= #1{~dcd_c, ~ri_c, ~dsr_c, ~cts_c};
-         delayed_modem_signals[3:0]       <= #1{dcd, ri, dsr, cts};
+         delayed_modem_signals[3:0] <= #1{dcd, ri, dsr, cts};
       end
    end
 
@@ -619,7 +625,8 @@ module uart_regs (
 
    always @(posedge clk or posedge wb_rst_i)
       if (wb_rst_i) lsr0r <= #1 0;
-      else lsr0r <= #1 (rf_count == 1 && rf_pop && !rf_push_pulse || rx_reset) ?
+      else
+         lsr0r <= #1 (rf_count == 1 && rf_pop && !rf_push_pulse || rx_reset) ?
              0 :  // deassert condition
          lsr0r || (lsr0 && ~lsr0_d);  // set on rise of lsr0 and keep asserted until deasserted
 
@@ -746,10 +753,10 @@ module uart_regs (
    //
 
    assign rls_int     = ier[`UART_IE_RLS] && (lsr[`UART_LS_OE] || lsr[`UART_LS_PE] || lsr[`UART_LS_FE] || lsr[`UART_LS_BI]);
-   assign rda_int     = ier[`UART_IE_RDA] && (rf_count >= {1'b0, trigger_level});
-   assign thre_int    = ier[`UART_IE_THRE] && lsr[`UART_LS_TFE];
-   assign ms_int      = ier[`UART_IE_MS] && (|msr[3:0]);
-   assign ti_int      = ier[`UART_IE_RDA] && (counter_t == 10'b0) && (|rf_count);
+   assign rda_int = ier[`UART_IE_RDA] && (rf_count >= {1'b0, trigger_level});
+   assign thre_int = ier[`UART_IE_THRE] && lsr[`UART_LS_TFE];
+   assign ms_int = ier[`UART_IE_MS] && (|msr[3:0]);
+   assign ti_int = ier[`UART_IE_RDA] && (counter_t == 10'b0) && (|rf_count);
 
    reg rls_int_d;
    reg thre_int_d;
@@ -816,7 +823,8 @@ module uart_regs (
 
    always @(posedge clk or posedge wb_rst_i)
       if (wb_rst_i) thre_int_pnd <= #1 0;
-      else thre_int_pnd <= #1 fifo_write || (iir_read & ~iir[`UART_II_IP] & iir[`UART_II_II] == `UART_II_THRE) ? 0 : thre_int_rise ? 1 : thre_int_pnd && ier[`UART_IE_THRE];
+      else
+         thre_int_pnd <= #1 fifo_write || (iir_read & ~iir[`UART_II_IP] & iir[`UART_II_II] == `UART_II_THRE) ? 0 : thre_int_rise ? 1 : thre_int_pnd && ier[`UART_IE_THRE];
 
    always @(posedge clk or posedge wb_rst_i)
       if (wb_rst_i) ms_int_pnd <= #1 0;
@@ -830,7 +838,8 @@ module uart_regs (
    // INT_O logic
    always @(posedge clk or posedge wb_rst_i) begin
       if (wb_rst_i) int_o <= #1 1'b0;
-      else int_o <= #1 rls_int_pnd ? ~lsr_mask : rda_int_pnd ? 1 : ti_int_pnd ? ~fifo_read : thre_int_pnd ? !(fifo_write & iir_read) : ms_int_pnd ? ~msr_read : 0;  // if no interrupt are pending
+      else
+         int_o <= #1 rls_int_pnd ? ~lsr_mask : rda_int_pnd ? 1 : ti_int_pnd ? ~fifo_read : thre_int_pnd ? !(fifo_write & iir_read) : ms_int_pnd ? ~msr_read : 0;  // if no interrupt are pending
    end
 
 
