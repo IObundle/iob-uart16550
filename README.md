@@ -6,8 +6,10 @@ Note: This version has a FIFO with [256 bytes](https://github.com/IObundle/iob-u
 
 Note: This version was modified to use a dedicated hardware based control of RTS/CTS signals (software control of these signals is ignored). Therefore, the software should have hardware flow control disabled to avoid issues.
 
-## How to build the core w/ python-setup
-The python-setup workflow allows to automatically generate verilog components used by the projects core Verilog. It allows to create bus interfaces with ease and use existing Verilog modules. To use python-setup the project should have a *project*_setup.py file in the root directory. The main commands to use the python-setup workflow are:
+## How to build the core with Py2HWSW ##
+The [Py2HWSW](https://nlnet.nl/project/Py2HWSW/) workflow allows to automatically generate verilog components used by the projects core Verilog. It allows to create bus interfaces with ease and use existing Verilog modules.
+To use Py2HWSW the project should have a *core_name*.py file in the root directory.
+The main commands to use the Py2HWSW workflow are:
 - `make setup`: creates a build directory in the projects parent directory.
 - `make clean`: removes the build directory.
 

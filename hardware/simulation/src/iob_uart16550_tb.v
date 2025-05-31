@@ -4,126 +4,105 @@
 
 module iob_uart16550_tb;
 
-   reg                                                 clkr;
-   reg                                                 wb_rst_ir;
-   wire                         [`UART_ADDR_WIDTH-1:0] wb_adr_i;
-   wire                         [                31:0] wb_dat_i;
-   wire                         [                31:0] wb_dat_o;
-   wire                                                wb_we_i;
-   wire                                                wb_stb_i;
-   wire                                                wb_cyc_i;
-   wire                                                wb_ack_o;
-   wire                         [                 3:0] wb_sel_i;
-   wire                                                int_o;
-   wire                                                pad_stx_o;
-   wire                                                rts_o;
-   wire                                                dtr_o;
-   reg                                                 pad_srx_ir;
+   reg                            clkr;
+   reg                            wb_rst_ir;
+   wire    [`UART_ADDR_WIDTH-1:0] wb_adr_i;
+   wire    [                31:0] wb_dat_i;
+   wire    [                31:0] wb_dat_o;
+   wire                           wb_we_i;
+   wire                           wb_stb_i;
+   wire                           wb_cyc_i;
+   wire                           wb_ack_o;
+   wire    [                 3:0] wb_sel_i;
+   wire                           int_o;
+   wire                           pad_stx_o;
+   wire                           rts_o;
+   reg                            pad_srx_ir;
 
    // All the signals and regs named with a 1 are receiver fifo signals
-   wire                         [`UART_ADDR_WIDTH-1:0] wb1_adr_i;
-   wire                         [                31:0] wb1_dat_i;
-   wire                         [                31:0] wb1_dat_o;
-   wire                                                wb1_we_i;
-   wire                                                wb1_stb_i;
-   wire                                                wb1_cyc_i;
-   wire                                                wb1_ack_o;
-   wire                         [                 3:0] wb1_sel_i;
-   wire                                                int1_o;
-   wire                                                stx1_o;
-   wire                                                rts1_o;
-   wire                                                dtr1_o;
-   reg                                                 srx1_ir;
+   wire    [`UART_ADDR_WIDTH-1:0] wb1_adr_i;
+   wire    [                31:0] wb1_dat_i;
+   wire    [                31:0] wb1_dat_o;
+   wire                           wb1_we_i;
+   wire                           wb1_stb_i;
+   wire                           wb1_cyc_i;
+   wire                           wb1_ack_o;
+   wire    [                 3:0] wb1_sel_i;
+   wire                           int1_o;
+   wire                           stx1_o;
+   wire                           rts1_o;
+   reg                            srx1_ir;
 
-   wire clk = clkr;
-   wire wb_rst_i = wb_rst_ir;
-   wire pad_srx_i = pad_srx_ir;
-   wire cts_i = 1;  //cts_ir;
-   wire dsr_i = 1;  //dsr_ir;
-   wire ri_i = 1;  //ri_ir;
-   wire dcd_i = 1;  //dcd_ir;
+   wire                           clk = clkr;
+   wire                           wb_rst_i = wb_rst_ir;
+   wire                           pad_srx_i = pad_srx_ir;
+   wire                           cts_i = 1;  //cts_ir;
 
-   wire srx1_i = srx1_ir;
-   wire cts1_i = 1;  //cts1_ir;
-   wire dsr1_i = 1;  //dsr1_ir;
-   wire ri1_i = 1;  //ri1_ir;
-   wire dcd1_i = 1;  //dcd1_ir;
+   wire                           srx1_i = srx1_ir;
+   wire                           cts1_i = 1;  //cts1_ir;
 
-   reg                          [                31:0] dat_o;
+   reg     [                31:0] dat_o;
 
-   integer                                             e;
-   integer                                             fd;
-   integer                                             failed = 0;
+   integer                        e;
+   integer                        fd;
+   integer                        failed = 0;
 
    localparam BYTE_1 = 8'b10000001;
    localparam BYTE_2 = 8'b01000010;
 
-   iob_uart16550_sim_wrapper uart_snd (
-      .clk(clk),
+   iob_uut uart_snd (
+      .clk_i (clk),
+      .cke_i (1'b1),
+      .arst_i(wb_rst_i),
 
       // Wishbone signals
-      .wb_rst_i(wb_rst_i),
-      .wb_adr_i(wb_adr_i),
-      .wb_dat_i(wb_dat_i),
-      .wb_dat_o(wb_dat_o),
-      .wb_we_i (wb_we_i),
-      .wb_stb_i(wb_stb_i),
-      .wb_cyc_i(wb_cyc_i),
-      .wb_ack_o(wb_ack_o),
-      .wb_sel_i(wb_sel_i),
+      .wb_dat_o   (wb_dat_o),
+      .wb_datout_i(wb_dat_i),
+      .wb_ack_o   (wb_ack_o),
+      .wb_adr_i   (wb_adr_i),
+      .wb_cyc_i   (wb_cyc_i),
+      .wb_sel_i   (wb_sel_i),
+      .wb_stb_i   (wb_stb_i),
+      .wb_we_i    (wb_we_i),
+
       // interrupt request
-      .int_o   (int_o),
+      .int_o(int_o),
 
       // UART signals
       // serial input/output
-      .pad_stx_o(pad_stx_o),
-      .pad_srx_i(pad_srx_i),
-
-`ifdef UART_HAS_BAUDRATE_OUTPUT,
-      .baud1_o(baud1_o),
-`endif
+      .rs232_txd_o(pad_stx_o),
+      .rs232_rxd_i(pad_srx_i),
 
       // modem signals
-      .rts_o(rts_o),
-      .cts_i(cts_i),
-      .dtr_o(dtr_o),
-      .dsr_i(dsr_i),
-      .ri_i (ri_i),
-      .dcd_i(dcd_i)
+      .rs232_rts_o(rts_o),
+      .rs232_cts_i(cts_i)
    );
 
-   iob_uart16550_sim_wrapper uart_rcv (
-      .clk(clk),
+   iob_uut uart_rcv (
+      .clk_i (clk),
+      .cke_i (1'b1),
+      .arst_i(wb_rst_i),
 
       // Wishbone signals
-      .wb_rst_i(wb_rst_i),
-      .wb_adr_i(wb1_adr_i),
-      .wb_dat_i(wb1_dat_i),
-      .wb_dat_o(wb1_dat_o),
-      .wb_we_i (wb1_we_i),
-      .wb_stb_i(wb1_stb_i),
-      .wb_cyc_i(wb1_cyc_i),
-      .wb_ack_o(wb1_ack_o),
-      .wb_sel_i(wb1_sel_i),
+      .wb_dat_o   (wb1_dat_o),
+      .wb_datout_i(wb1_dat_i),
+      .wb_ack_o   (wb1_ack_o),
+      .wb_adr_i   (wb1_adr_i),
+      .wb_cyc_i   (wb1_cyc_i),
+      .wb_sel_i   (wb1_sel_i),
+      .wb_stb_i   (wb1_stb_i),
+      .wb_we_i    (wb1_we_i),
       // interrupt request
-      .int_o   (int1_o),
+      .int_o      (int1_o),
 
       // UART signals
       // serial input/output
-      .pad_stx_o(stx1_o),
-      .pad_srx_i(srx1_i),
-
-`ifdef UART_HAS_BAUDRATE_OUTPUT,
-      .baud1_o(baud2_o),
-`endif
+      .rs232_txd_o(stx1_o),
+      .rs232_rxd_i(srx1_i),
 
       // modem signals
-      .rts_o(rts1_o),
-      .cts_i(cts1_i),
-      .dtr_o(dtr1_o),
-      .dsr_i(dsr1_i),
-      .ri_i (ri1_i),
-      .dcd_i(dcd1_i)
+      .rs232_rts_o(rts1_o),
+      .rs232_cts_i(cts1_i)
    );
 
    /////////// CONNECT THE UARTS

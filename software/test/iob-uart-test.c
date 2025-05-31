@@ -1,7 +1,7 @@
 //#include "stdlib.h"
-#include "system.h"
-#include "periphs.h"
 #include "iob-uart.h"
+#include "periphs.h"
+#include "system.h"
 #include <stdint.h>
 
 int main() {

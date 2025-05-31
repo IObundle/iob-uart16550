@@ -5,25 +5,25 @@ def setup(py_params_dict):
         "ports": [
             {
                 "name": "clk_en_rst_s",
-                "signals": {
-                    "type": "clk_en_rst",
-                },
                 "descr": "Clock, clock enable and reset",
+                "signals": {
+                    "type": "iob_clk",
+                },
             },
             {
-                "name": "cbus_s",
+                "name": "iob_csrs_cbus_s",
+                "descr": "CPU native interface",
                 "signals": {
                     "type": "iob",
                     "ADDR_W": 5,
                 },
-                "descr": "CPU native interface",
             },
             {
                 "name": "rs232_m",
+                "descr": "RS232 interface",
                 "signals": {
                     "type": "rs232",
                 },
-                "descr": "RS232 interface",
             },
             {
                 "name": "interrupt_o",
@@ -41,12 +41,14 @@ def setup(py_params_dict):
             {
                 "core_name": "iob_iob2wishbone",
             },
+            {
+                "core_name": "iob_prio_enc",
+            },
         ],
         "superblocks": [
             # Simulation wrapper
             {
-                "core_name": "iob_sim",
-                "instance_name": "iob_sim",
+                "core_name": "iob_uart16550_sim",
                 "dest_dir": "hardware/simulation/src",
             },
         ],

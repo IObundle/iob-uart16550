@@ -1,6 +1,6 @@
-#include <stdint.h>
 #include "iob_uart16550.h"
 #include "iob_printf.h"
+#include <stdint.h>
 
 static int base;
 
