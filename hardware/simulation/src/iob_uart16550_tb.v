@@ -123,7 +123,7 @@ module iob_uart16550_tb;
 
    initial begin
       clkr = 0;
-      // #50000 $display("BOOM!");
+      // #50000 $display("Teste failed due to timeout!");
       // $finish();
    end
 
@@ -223,8 +223,10 @@ module iob_uart16550_tb;
       $display("%m : Finish");
       fd = $fopen("test.log", "w");
       if (!failed) begin
+         $display("All tests passed!");
          $fdisplay(fd, "Test passed!");
       end else begin
+         $display("Failed tests: %d", failed);
          $fdisplay(fd, "Test failed!");
       end
       $fclose(fd);
