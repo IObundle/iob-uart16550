@@ -121,11 +121,11 @@ module iob_uart16550_tb;
    end
 `endif
 
-   //initial begin
-   //   clkr = 0;
-   //   #50000 $display("BOOM!");
-   //   $finish();
-   //end
+   initial begin
+      clkr = 0;
+      // #50000 $display("BOOM!");
+      // $finish();
+   end
 
    initial begin
       $display("Data bus is %0d-bit. UART uses %0d-bit addr.", `UART_DATA_WIDTH, `UART_ADDR_WIDTH);

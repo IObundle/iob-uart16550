@@ -112,14 +112,15 @@ def setup(py_params_dict):
       .wb_clk_i (clk_i),
       // WISHBONE interface
       .wb_rst_i (arst_i),
-      .wb_adr_i (internal_wb_adr),
-      .wb_sel_i (internal_wb_sel),
-      .wb_we_i  (internal_wb_we),
-      .wb_cyc_i (internal_wb_cyc),
-      .wb_stb_i (internal_wb_stb),
-      .wb_dat_i (internal_wb_dat),
+
+      .wb_dat_o (internal_wb_dat),
+      .wb_dat_i (internal_wb_datout),
       .wb_ack_o (internal_wb_ack),
-      .wb_dat_o (internal_wb_datout),
+      .wb_adr_i (internal_wb_adr),
+      .wb_cyc_i (internal_wb_cyc),
+      .wb_sel_i (internal_wb_sel),
+      .wb_stb_i (internal_wb_stb),
+      .wb_we_i  (internal_wb_we),
       .int_o    (interrupt_o),
 `ifdef UART_HAS_BAUDRATE_OUTPUT
       .baud1_o  (),
