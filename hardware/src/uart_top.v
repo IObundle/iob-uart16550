@@ -237,9 +237,9 @@ module uart_top (
    wire [                     3:0] rstate;
 `endif
 
-   wire [              2-1:0] lsbs_encoded;
+   wire [              3-1:0] lsbs_encoded;
    // Ignore 2 lsbs from address. Instead use generate lsbs based on 'sel' signal
-   wire [uart_addr_width-1:0] wb_adr_lsbs = {wb_adr_i[uart_addr_width-2-1:0], lsbs_encoded};
+   wire [uart_addr_width-1:0] wb_adr_lsbs = {wb_adr_i[uart_addr_width-2-1:0], lsbs_encoded[1:0]};
 
    iob_prio_enc #(
       .W(4)

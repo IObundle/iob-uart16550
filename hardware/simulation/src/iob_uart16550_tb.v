@@ -121,11 +121,11 @@ module iob_uart16550_tb;
    end
 `endif
 
-   initial begin
-      clkr = 0;
-      #50000 $display("BOOM!");
-      $finish();
-   end
+   //initial begin
+   //   clkr = 0;
+   //   #50000 $display("BOOM!");
+   //   $finish();
+   //end
 
    initial begin
       $display("Data bus is %0d-bit. UART uses %0d-bit addr.", `UART_DATA_WIDTH, `UART_ADDR_WIDTH);
@@ -194,7 +194,7 @@ module iob_uart16550_tb;
             @(posedge clk);
             $display("%m : %t : sending : %h", $time(), BYTE_2);
             wbm.wb_wr1(0, 4'h1, BYTE_2);
-            wait (uart_snd.uart16550.uart16550.regs.tstate == 0 && uart_snd.uart16550.uart16550.regs.transmitter.tf_count == 0);
+            wait (uart_snd.uart16550_inst.uart16550.regs.tstate == 0 && uart_snd.uart16550_inst.uart16550.regs.transmitter.tf_count == 0);
          end
       join
    end
@@ -212,7 +212,7 @@ module iob_uart16550_tb;
       // restore normal registers
       wbm1.wb_wr1(`UART_REG_LC, 4'b1000, {8'b00011011, 24'b0});
       wbm1.wb_wr1(`UART_REG_IE, 4'b0010, {16'b0, 8'b00001111, 8'b0});
-      wait (uart_rcv.uart16550.uart16550.regs.receiver.rf_count == 2);
+      wait (uart_rcv.uart16550_inst.uart16550.regs.receiver.rf_count == 2);
       wbm1.wb_rd1(0, 4'h1, dat_o);
       $display("%m : %t : Data out: %h", $time(), dat_o[7:0]);
       if (dat_o != BYTE_1) failed = failed + 1;

@@ -16,13 +16,13 @@ def setup(py_params_dict):
             "name": "ADDR_W",
             "descr": "Data bus width",
             "type": "P",
-            "val": "3",
+            "val": 5,
         },
         {
             "name": "DATA_W",
             "descr": "Data bus width",
             "type": "P",
-            "val": "32",
+            "val": 32,
         },
     ]
     #
