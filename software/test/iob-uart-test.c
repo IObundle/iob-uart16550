@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2025 IObundle
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 //#include "stdlib.h"
 #include "iob-uart.h"
 #include "periphs.h"

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2025 IObundle
+
+SPDX-License-Identifier: MIT
+-->
+
 ## IOb-UART16550 ##
 
 This is an adaptation of the UART16550 at https://opencores.org/projects/uart16550 to the IOb-SoC.
