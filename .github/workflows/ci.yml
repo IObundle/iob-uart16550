@@ -24,14 +24,12 @@ on:
   workflow_dispatch:
 
 jobs:
-
   simulation:
     runs-on: self-hosted
     timeout-minutes: 30
     # run even if previous job failed
     if: ${{ !cancelled() }}
-    needs: [ pc-emul ]
-  
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,8 +42,8 @@ jobs:
     runs-on: self-hosted
     timeout-minutes: 60
     if: ${{ !cancelled() }}
-    needs: [ cyclonev ]
-  
+    needs: [ simulation ]
+
     steps:
       - uses: actions/checkout@v4
         with:
