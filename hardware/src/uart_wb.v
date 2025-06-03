@@ -1,3 +1,10 @@
+// SPDX-FileCopyrightText: 2000, 2001 gorban@opencores.org
+// SPDX-FileCopyrightText: 2000, 2001 Jacob Gorban
+// SPDX-FileCopyrightText: 2000, 2001 Igor Mohor (igorm@opencores.org)
+// SPDX-FileCopyrightText: 2025 IObundle
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 ////  uart_wb.v                                                   ////
@@ -150,8 +157,6 @@ module uart_wb (
    wb_dat_o,
    wb_dat8_i,
    wb_dat8_o,
-   wb_dat_bypass_i,
-   wb_dat_bypass_o,
    wb_dat32_o,
    wb_sel_i,
    we_o,
@@ -185,9 +190,6 @@ module uart_wb (
    output [`UART_ADDR_WIDTH-1:0] wb_adr_int;  // internal signal for address bus
    input [7:0] wb_dat8_o;  // internal 8 bit output to be put into wb_dat_o
    output [7:0] wb_dat8_i;
-   input [32-1:0] wb_dat_bypass_o;  // internal 8 bit output to be put into wb_dat_o
-   output [32-1:0] wb_dat_bypass_i;
-   reg [32-1:0] wb_dat_bypass_i;
    input [31:0] wb_dat32_o;  // 32 bit data output (for debug interface)
    output wb_ack_o;
    output we_o;
@@ -272,15 +274,14 @@ module uart_wb (
    always @(posedge clk or posedge wb_rst_i)
       if (wb_rst_i) wb_dat_o <= #1 0;
       else if (re_o)
-         // case (wb_sel_is)
-         //    4'b0001: wb_dat_o <= #1{24'b0, wb_dat8_o};
-         //    4'b0010: wb_dat_o <= #1{16'b0, wb_dat8_o, 8'b0};
-         //    4'b0100: wb_dat_o <= #1{8'b0, wb_dat8_o, 16'b0};
-         //    4'b1000: wb_dat_o <= #1{wb_dat8_o, 24'b0};
-         //    4'b1111: wb_dat_o <= #1 wb_dat32_o;  // debug interface output
-         //    default: wb_dat_o <= #1 0;
-         // endcase  // case(wb_sel_i)
-         wb_dat_o <= #1 wb_dat_bypass_o;
+         case (wb_sel_is)
+            4'b0001: wb_dat_o <= #1{24'b0, wb_dat8_o};
+            4'b0010: wb_dat_o <= #1{16'b0, wb_dat8_o, 8'b0};
+            4'b0100: wb_dat_o <= #1{8'b0, wb_dat8_o, 16'b0};
+            4'b1000: wb_dat_o <= #1{wb_dat8_o, 24'b0};
+            4'b1111: wb_dat_o <= #1 wb_dat32_o;  // debug interface output
+            default: wb_dat_o <= #1 0;
+         endcase  // case(wb_sel_i)
 
    reg [1:0] wb_adr_int_lsb;
 
@@ -292,7 +293,6 @@ module uart_wb (
          4'b1000: wb_dat8_i = wb_dat_is[31:24];
          default: wb_dat8_i = wb_dat_is[7:0];
       endcase  // case(wb_sel_i)
-      wb_dat_bypass_i = wb_dat_is;
 
 `ifdef LITLE_ENDIAN
       case (wb_sel_is)

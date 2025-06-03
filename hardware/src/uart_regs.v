@@ -1,3 +1,10 @@
+// SPDX-FileCopyrightText: 2000, 2001 gorban@opencores.org
+// SPDX-FileCopyrightText: 2000, 2001 Jacob Gorban
+// SPDX-FileCopyrightText: 2000, 2001 Igor Mohor (igorm@opencores.org)
+// SPDX-FileCopyrightText: 2025 IObundle
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 ////  uart_regs.v                                                 ////
@@ -266,8 +273,8 @@ module uart_regs (
    input clk;
    input wb_rst_i;
    input [`UART_ADDR_WIDTH-1:0] wb_addr_i;
-   input [32-1:0] wb_dat_i;
-   output [32-1:0] wb_dat_o;
+   input [7:0] wb_dat_i;
+   output [7:0] wb_dat_o;
    input wb_we_i;
    input wb_re_i;
 
@@ -310,10 +317,10 @@ module uart_regs (
    wire                        srx_pad_i;
    wire                        srx_pad;
 
-   reg  [              32-1:0] wb_dat_o;
+   reg  [                 7:0] wb_dat_o;
 
    wire [`UART_ADDR_WIDTH-1:0] wb_addr_i;
-   wire [              32-1:0] wb_dat_i;
+   wire [                 7:0] wb_dat_i;
 
 
    reg  [                 3:0] ier;
@@ -400,7 +407,7 @@ module uart_regs (
       .wb_rst_i (wb_rst_i),
       .lcr      (lcr),
       .tf_push  (tf_push),
-      .wb_dat_i (wb_dat_i[0*8+:8]),
+      .wb_dat_i (wb_dat_i),
       //.enable   (enable),
       // CTS mod: Transmitter only works when CTS is high (controlled purely by hardware)
       .enable   (enable && cts_pad_i),
@@ -456,19 +463,14 @@ module uart_regs (
             or wb_re_i)  // asynchrounous reading
        begin
       case (wb_addr_i)
-         `UART_REG_RB, `UART_REG_IE, `UART_REG_II, `UART_REG_LC: wb_dat_o = {
-            lcr,
-            {4'b1100, iir},
-            dlab ? dl[`UART_DL2] : ier,
-            dlab ? dl[`UART_DL1] : rf_data_out[10:3]
-         };
-         `UART_REG_LS, `UART_REG_MS, `UART_REG_SR: wb_dat_o = {
-            scratch,
-            msr,
-            lsr,
-            8'b0
-         };
-         default:      wb_dat_o = 32'b0;  // ??
+         `UART_REG_RB: wb_dat_o = dlab ? dl[`UART_DL1] : rf_data_out[10:3];
+         `UART_REG_IE: wb_dat_o = dlab ? dl[`UART_DL2] : ier;
+         `UART_REG_II: wb_dat_o = {4'b1100, iir};
+         `UART_REG_LC: wb_dat_o = lcr;
+         `UART_REG_LS: wb_dat_o = lsr;
+         `UART_REG_MS: wb_dat_o = msr;
+         `UART_REG_SR: wb_dat_o = scratch;
+         default:      wb_dat_o = 8'b0;  // ??
       endcase  // case(wb_addr_i)
    end  // always @ (dl or dlab or ier or iir or scratch...
 
@@ -518,7 +520,7 @@ module uart_regs (
    // Line Control Register
    always @(posedge clk or posedge wb_rst_i)
       if (wb_rst_i) lcr <= #1 8'b00000011;  // 8n1 setting
-      else if (wb_we_i && wb_addr_i == `UART_REG_LC) lcr <= #1 wb_dat_i[3*8+:8];
+      else if (wb_we_i && wb_addr_i == `UART_REG_LC) lcr <= #1 wb_dat_i;
 
    // Interrupt Enable Register or UART_DL2
    always @(posedge clk or posedge wb_rst_i)
@@ -527,8 +529,8 @@ module uart_regs (
          dl[`UART_DL2] <= #1 8'b0;
       end else if (wb_we_i && wb_addr_i == `UART_REG_IE)
          if (dlab) begin
-            dl[`UART_DL2] <= #1 wb_dat_i[1*8+:8];
-         end else ier <= #1 wb_dat_i[1*8+:4];  // ier uses only 4 lsb
+            dl[`UART_DL2] <= #1 wb_dat_i;
+         end else ier <= #1 wb_dat_i[3:0];  // ier uses only 4 lsb
 
 
    // FIFO Control Register and rx_reset, tx_reset signals
@@ -538,9 +540,9 @@ module uart_regs (
          rx_reset <= #1 0;
          tx_reset <= #1 0;
       end else if (wb_we_i && wb_addr_i == `UART_REG_FC) begin
-         fcr      <= #1 wb_dat_i[2*8+6+:2];
-         rx_reset <= #1 wb_dat_i[2*8+1+:1];
-         tx_reset <= #1 wb_dat_i[2*8+2+:1];
+         fcr      <= #1 wb_dat_i[7:6];
+         rx_reset <= #1 wb_dat_i[1];
+         tx_reset <= #1 wb_dat_i[2];
       end else begin
          rx_reset <= #1 0;
          tx_reset <= #1 0;
@@ -549,13 +551,13 @@ module uart_regs (
    // Modem Control Register
    always @(posedge clk or posedge wb_rst_i)
       if (wb_rst_i) mcr <= #1 5'b0;
-      else if (wb_we_i && wb_addr_i == `UART_REG_MC) mcr <= #1 wb_dat_i[0*8+:4];
+      else if (wb_we_i && wb_addr_i == `UART_REG_MC) mcr <= #1 wb_dat_i[4:0];
 
    // Scratch register
    // Line Control Register
    always @(posedge clk or posedge wb_rst_i)
       if (wb_rst_i) scratch <= #1 0;  // 8n1 setting
-      else if (wb_we_i && wb_addr_i == `UART_REG_SR) scratch <= #1 wb_dat_i[3*8+:8];
+      else if (wb_we_i && wb_addr_i == `UART_REG_SR) scratch <= #1 wb_dat_i;
 
    // TX_FIFO or UART_DL1
    always @(posedge clk or posedge wb_rst_i)
@@ -565,7 +567,7 @@ module uart_regs (
          start_dlc     <= #1 1'b0;
       end else if (wb_we_i && wb_addr_i == `UART_REG_TR)
          if (dlab) begin
-            dl[`UART_DL1] <= #1 wb_dat_i[0*8+:8];
+            dl[`UART_DL1] <= #1 wb_dat_i;
             start_dlc     <= #1 1'b1;  // enable DL counter
             tf_push       <= #1 1'b0;
          end else begin

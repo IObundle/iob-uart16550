@@ -1,3 +1,10 @@
+// SPDX-FileCopyrightText: 2000, 2001 gorban@opencores.org
+// SPDX-FileCopyrightText: 2000, 2001 Jacob Gorban
+// SPDX-FileCopyrightText: 2000, 2001 Igor Mohor (igorm@opencores.org)
+// SPDX-FileCopyrightText: 2025 IObundle
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 ////  uart_top.v                                                  ////
@@ -210,9 +217,9 @@ module uart_top (
    wire [uart_data_width-1:0] wb_dat_i;
    wire [uart_data_width-1:0] wb_dat_o;
 
-   wire [             32-1:0] wb_dat32_i;  // 32-bit internal data input
-   wire [             32-1:0] wb_dat32_o;  // 32-bit internal data output
-   wire [               31:0] wb_dat_db_o;  // debug interface 32-bit output
+   wire [                7:0] wb_dat8_i;  // 8-bit internal data input
+   wire [                7:0] wb_dat8_o;  // 8-bit internal data output
+   wire [               31:0] wb_dat32_o;  // debug interface 32-bit output
    wire [                3:0] wb_sel_i;  // WISHBONE select signal
    wire [uart_addr_width-1:0] wb_adr_int;
    wire                       we_o;  // Write enable for registers
@@ -237,17 +244,6 @@ module uart_top (
    wire [                     3:0] rstate;
 `endif
 
-   wire [              2-1:0] lsbs_encoded;
-   // Ignore 2 lsbs from address. Instead use generate lsbs based on 'sel' signal
-   wire [uart_addr_width-1:0] wb_adr_lsbs = {wb_adr_i[uart_addr_width-2-1:0], lsbs_encoded};
-
-   iob_prio_enc #(
-      .W(4)
-   ) iob_prio_enc_inst (
-      .unencoded_i(wb_sel_i),
-      .encoded_o  (lsbs_encoded)
-   );
-
 `ifdef DATA_BUS_WIDTH_8
    ////  WISHBONE interface module
    uart_wb wb_interface (
@@ -270,24 +266,22 @@ module uart_top (
    );
 `else
    uart_wb wb_interface (
-      .clk            (wb_clk_i),
-      .wb_rst_i       (wb_rst_i),
-      .wb_dat_i       (wb_dat_i),
-      .wb_dat_o       (wb_dat_o),
-      .wb_dat8_i      (),
-      .wb_dat8_o      (8'b0),
-      .wb_dat_bypass_i(wb_dat32_i),
-      .wb_dat_bypass_o(wb_dat32_o),
-      .wb_sel_i       (wb_sel_i),
-      .wb_dat32_o     (wb_dat_db_o),
-      .wb_we_i        (wb_we_i),
-      .wb_stb_i       (wb_stb_i),
-      .wb_cyc_i       (wb_cyc_i),
-      .wb_ack_o       (wb_ack_o),
-      .wb_adr_i       (wb_adr_lsbs),
-      .wb_adr_int     (wb_adr_int),
-      .we_o           (we_o),
-      .re_o           (re_o)
+      .clk       (wb_clk_i),
+      .wb_rst_i  (wb_rst_i),
+      .wb_dat_i  (wb_dat_i),
+      .wb_dat_o  (wb_dat_o),
+      .wb_dat8_i (wb_dat8_i),
+      .wb_dat8_o (wb_dat8_o),
+      .wb_sel_i  (wb_sel_i),
+      .wb_dat32_o(wb_dat32_o),
+      .wb_we_i   (wb_we_i),
+      .wb_stb_i  (wb_stb_i),
+      .wb_cyc_i  (wb_cyc_i),
+      .wb_ack_o  (wb_ack_o),
+      .wb_adr_i  (wb_adr_i),
+      .wb_adr_int(wb_adr_int),
+      .we_o      (we_o),
+      .re_o      (re_o)
    );
 `endif
 
@@ -296,8 +290,8 @@ module uart_top (
       .clk         (wb_clk_i),
       .wb_rst_i    (wb_rst_i),
       .wb_addr_i   (wb_adr_int),
-      .wb_dat_i    (wb_dat32_i),
-      .wb_dat_o    (wb_dat32_o),
+      .wb_dat_i    (wb_dat8_i),
+      .wb_dat_o    (wb_dat8_o),
       .wb_we_i     (we_o),
       .wb_re_i     (re_o),
       .modem_inputs({cts_pad_i, dsr_pad_i, ri_pad_i, dcd_pad_i}),
@@ -331,7 +325,7 @@ module uart_top (
 `else
    uart_debug_if dbg (  /*AUTOINST*/
       // Outputs
-      .wb_dat32_o(wb_dat_db_o[31:0]),
+      .wb_dat32_o(wb_dat32_o[31:0]),
       // Inputs
       .wb_adr_i  (wb_adr_int[`UART_ADDR_WIDTH-1:0]),
       .ier       (ier[3:0]),

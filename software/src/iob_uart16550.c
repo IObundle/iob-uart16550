@@ -1,6 +1,12 @@
-#include <stdint.h>
+/*
+ * SPDX-FileCopyrightText: 2025 IObundle
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "iob_uart16550.h"
 #include "iob_printf.h"
+#include <stdint.h>
 
 static int base;
 

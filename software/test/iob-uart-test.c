@@ -1,7 +1,13 @@
+/*
+ * SPDX-FileCopyrightText: 2025 IObundle
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 //#include "stdlib.h"
-#include "system.h"
-#include "periphs.h"
 #include "iob-uart.h"
+#include "periphs.h"
+#include "system.h"
 #include <stdint.h>
 
 int main() {

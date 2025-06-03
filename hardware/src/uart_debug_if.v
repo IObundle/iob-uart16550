@@ -1,3 +1,9 @@
+// SPDX-FileCopyrightText: 2000, 2001 gorban@opencores.org
+// SPDX-FileCopyrightText: 2000, 2001 Jacob Gorban
+// SPDX-FileCopyrightText: 2025 IObundle
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 ////  uart_debug_if.v                                             ////

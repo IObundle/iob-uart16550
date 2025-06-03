@@ -1,3 +1,10 @@
+// SPDX-FileCopyrightText: 2000, 2001 gorban@opencores.org
+// SPDX-FileCopyrightText: 2000, 2001 Jacob Gorban
+// SPDX-FileCopyrightText: 2000, 2001 Igor Mohor (igorm@opencores.org)
+// SPDX-FileCopyrightText: 2025 IObundle
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 ////  uart_tfifo.v                                                ////
@@ -173,14 +180,14 @@ module uart_tfifo (
    output overrun;
    output [fifo_counter_w-1:0] count;
 
-   wire [    fifo_width-1:0]                          data_out;
+   wire [    fifo_width-1:0] data_out;
 
    // FIFO pointers
-   reg  [fifo_pointer_w-1:0]                          top;
-   reg  [fifo_pointer_w-1:0]                          bottom;
+   reg  [fifo_pointer_w-1:0] top;
+   reg  [fifo_pointer_w-1:0] bottom;
 
-   reg  [fifo_counter_w-1:0]                          count;
-   reg                                                overrun;
+   reg  [fifo_counter_w-1:0] count;
+   reg                       overrun;
    wire [fifo_pointer_w-1:0] top_plus_1 = top + 1'b1;
 
    raminfr #(

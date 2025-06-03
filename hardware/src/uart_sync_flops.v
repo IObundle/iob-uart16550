@@ -1,3 +1,9 @@
+// SPDX-FileCopyrightText: 2000, 2001 Andrej Erzen (andreje@flextronics.si)
+// SPDX-FileCopyrightText: 2000, 2001 Tadej Markovic (tadejm@flextronics.si)
+// SPDX-FileCopyrightText: 2025 IObundle
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 ////  uart_sync_flops.v                                             ////

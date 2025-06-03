@@ -1,3 +1,10 @@
+// SPDX-FileCopyrightText: 2000, 2001 gorban@opencores.org
+// SPDX-FileCopyrightText: 2000, 2001 Jacob Gorban
+// SPDX-FileCopyrightText: 2000, 2001 Igor Mohor (igorm@opencores.org)
+// SPDX-FileCopyrightText: 2025 IObundle
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 ////  uart_receiver.v                                             ////
@@ -228,28 +235,28 @@ module uart_receiver (
    output [3:0] rstate;
    output rf_push_pulse;
 
-   reg                                  [                     3:0] rstate;
-   reg                                  [                     3:0] rcounter16;
-   reg                                  [                     2:0] rbit_counter;
-   reg                                  [                     7:0] rshift;  // receiver shift register
-   reg                                                             rparity;  // received parity
-   reg                                                             rparity_error;
-   reg                                                             rframing_error;  // framing error flag
-   reg                                                             rbit_in;
-   reg                                                             rparity_xor;
-   reg                                  [                     7:0] counter_b;  // counts the 0 (low) signals
-   reg                                                             rf_push_q;
+   reg  [                     3:0] rstate;
+   reg  [                     3:0] rcounter16;
+   reg  [                     2:0] rbit_counter;
+   reg  [                     7:0] rshift;  // receiver shift register
+   reg                             rparity;  // received parity
+   reg                             rparity_error;
+   reg                             rframing_error;  // framing error flag
+   reg                             rbit_in;
+   reg                             rparity_xor;
+   reg  [                     7:0] counter_b;  // counts the 0 (low) signals
+   reg                             rf_push_q;
 
    // RX FIFO signals
-   reg                                  [`UART_FIFO_REC_WIDTH-1:0] rf_data_in;
-   wire                                 [`UART_FIFO_REC_WIDTH-1:0] rf_data_out;
-   wire                                                            rf_push_pulse;
-   reg                                                             rf_push;
-   wire                                                            rf_pop;
-   wire                                                            rf_overrun;
-   wire                                 [`UART_FIFO_COUNTER_W-1:0] rf_count;
-   wire                                                            rf_error_bit;  // an error (parity or framing) is inside the fifo
-   wire break_error = (counter_b == 0);
+   reg  [`UART_FIFO_REC_WIDTH-1:0] rf_data_in;
+   wire [`UART_FIFO_REC_WIDTH-1:0] rf_data_out;
+   wire                            rf_push_pulse;
+   reg                             rf_push;
+   wire                            rf_pop;
+   wire                            rf_overrun;
+   wire [`UART_FIFO_COUNTER_W-1:0] rf_count;
+   wire                            rf_error_bit;  // an error (parity or framing) is inside the fifo
+   wire                            break_error = (counter_b == 0);
 
    // RX FIFO instance
    uart_rfifo #(`UART_FIFO_REC_WIDTH) fifo_rx (
@@ -266,11 +273,11 @@ module uart_receiver (
       .reset_status(lsr_mask)
    );
 
-   wire rcounter16_eq_7 = (rcounter16 == 4'd7);
-   wire rcounter16_eq_0 = (rcounter16 == 4'd0);
-   wire rcounter16_eq_1 = (rcounter16 == 4'd1);
+   wire       rcounter16_eq_7 = (rcounter16 == 4'd7);
+   wire       rcounter16_eq_0 = (rcounter16 == 4'd0);
+   wire       rcounter16_eq_1 = (rcounter16 == 4'd1);
 
-   wire                                         [3:0] rcounter16_minus_1 = rcounter16 - 1'b1;
+   wire [3:0] rcounter16_minus_1 = rcounter16 - 1'b1;
 
    parameter sr_idle = 4'd0;
    parameter sr_rec_start = 4'd1;
@@ -400,7 +407,10 @@ module uart_receiver (
                ///////////////////////////////////////
                //        $display($time, ": received: %b", rf_data_in);
                if (srx_pad_i | break_error) begin
-                  if (break_error) rf_data_in <= #1{8'b0, 3'b100};  // break input (empty character) to receiver FIFO
+                  if (break_error)
+                     rf_data_in <= #1{
+                        8'b0, 3'b100
+                     };  // break input (empty character) to receiver FIFO
                   else rf_data_in <= #1{rshift, 1'b0, rparity_error, rframing_error};
                   rf_push <= #1 1'b1;
                   rstate  <= #1 sr_idle;

@@ -1,3 +1,10 @@
+// SPDX-FileCopyrightText: 2000, 2001 gorban@opencores.org
+// SPDX-FileCopyrightText: 2000, 2001 Jacob Gorban
+// SPDX-FileCopyrightText: 2000, 2001 Igor Mohor (igorm@opencores.org)
+// SPDX-FileCopyrightText: 2025 IObundle
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 ////  uart_rfifo.v (Modified from uart_fifo.v)                    ////
@@ -183,17 +190,17 @@ module uart_rfifo (
 
    genvar i;
 
-   wire [    fifo_width-1:0]                          data_out;
-   wire [               7:0]                          data8_out;
+   wire [    fifo_width-1:0] data_out;
+   wire [               7:0] data8_out;
    // flags FIFO
-   reg  [               2:0]                          fifo      [fifo_depth];
+   reg  [               2:0] fifo                    [fifo_depth];
 
    // FIFO pointers
-   reg  [fifo_pointer_w-1:0]                          top;
-   reg  [fifo_pointer_w-1:0]                          bottom;
+   reg  [fifo_pointer_w-1:0] top;
+   reg  [fifo_pointer_w-1:0] bottom;
 
-   reg  [fifo_counter_w-1:0]                          count;
-   reg                                                overrun;
+   reg  [fifo_counter_w-1:0] count;
+   reg                       overrun;
 
    wire [fifo_pointer_w-1:0] top_plus_1 = top + 1'b1;
 
@@ -214,13 +221,13 @@ module uart_rfifo (
       begin
       // Cannot check '(wb_rst_i | fifo_reset)' because of Quartus issue: https://www.intel.com/content/www/us/en/programmable/quartushelp/18.1/index.htm#msgs/msgs/evrfx_veri_if_condition_does_not_match_sensitivity_list_edge.htm
       if (wb_rst_i) begin
-         top      <= #1 0;
-         bottom   <= #1 1'b0;
-         count    <= #1 0;
+         top    <= #1 0;
+         bottom <= #1 1'b0;
+         count  <= #1 0;
       end else if (fifo_reset) begin
-         top      <= #1 0;
-         bottom   <= #1 1'b0;
-         count    <= #1 0;
+         top    <= #1 0;
+         bottom <= #1 1'b0;
+         count  <= #1 0;
       end else begin
          case ({
             push, pop
@@ -265,7 +272,7 @@ module uart_rfifo (
    // a 1 is returned if any of the error bits in the fifo is 1
    wire [3*fifo_depth-1:0] error_bits;
    generate
-      for (i = 0; i < fifo_depth; i = i + 1) begin: gen_error_bits
+      for (i = 0; i < fifo_depth; i = i + 1) begin : gen_error_bits
          assign error_bits[i*3+:3] = fifo[i][2:0];
       end
    endgenerate

@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2001 Rudolf Usselmann
+// SPDX-FileCopyrightText: 2025 IObundle
+//
+// SPDX-License-Identifier: MIT
+
 /////////////////////////////////////////////////////////////////////
 ////                                                             ////
 ////  WISHBONE Master Model                                      ////
