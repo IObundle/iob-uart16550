@@ -37,10 +37,10 @@ def setup(py_params_dict):
             },
             {
                 "name": "iob_csrs_cbus_s",
-                "descr": "CPU native interface",
+                "descr": "Control and Status Registers interface",
                 "signals": {
                     "type": "iob",
-                    "ADDR_W": "ADDR_W",
+                    "ADDR_W": 5,
                 },
             },
             {
