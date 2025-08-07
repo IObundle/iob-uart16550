@@ -127,14 +127,16 @@ int uart16550_recvfile(char *file_name, char *mem) {
   file_size |= ((unsigned int)uart16550_getc()) << 16;
   file_size |= ((unsigned int)uart16550_getc()) << 24;
 
-  // allocate space for file if file pointer not initialized
-  if (mem == NULL) {
-    mem = (char *)malloc(file_size);
-    if (mem == NULL) {
-      uart16550_puts(UART_PROGNAME);
-      uart16550_puts("Error: malloc failed");
-    }
-  }
+  // Disabled this because we may want to write files starting at address 0 (to
+  // initialize memory of iob_system).
+  // Allocate space for file if file pointer
+  // not initialized if (mem == NULL) {
+  //   mem = (char *)malloc(file_size);
+  //   if (mem == NULL) {
+  //     uart16550_puts(UART_PROGNAME);
+  //     uart16550_puts("Error: malloc failed");
+  //   }
+  // }
 
   // send ACK before receiving file
   uart16550_putc(ACK);
