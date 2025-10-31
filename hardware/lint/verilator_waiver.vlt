@@ -1,0 +1,15 @@
+// DESCRIPTION: Verilator output: Waivers generated with --waiver-output
+
+`verilator_config
+
+// unused module output
+lint_off -rule PINCONNECTEMPTY -file "**/iob_uart16550.v" -match "Instance pin connected by name with empty reference: 'dtr_pad_o'*"
+
+// wb_adr_is LSBs are used if DATA_BUS_WIDTH_8
+lint_off -rule UNUSEDSIGNAL -file "**/uart_wb.v" -match "Bits of signal are not used: 'wb_adr_is'[1:0]*"
+
+// keep all lcr register bits for consistency
+lint_off -rule UNUSEDSIGNAL -file "**/uart_transmitter.v" -match "Bits of signal are not used: 'lcr'[7]*"
+
+// usused module ouptut
+lint_off -rule PINCONNECTEMPTY -file "**/uart_transmitter.v" -match "Instance pin connected by name with empty reference: 'overrun'*"
