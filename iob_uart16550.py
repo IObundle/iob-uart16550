@@ -107,6 +107,12 @@ def setup(py_params_dict):
                 "dest_dir": "hardware/simulation/src",
             },
         ],
+        "sw_modules": [
+            {
+                "core_name": "iob_coverage_analyze",
+                "instance_name": "iob_coverage_analyze_inst",
+            },
+        ],
         #
         # Snippets
         #
