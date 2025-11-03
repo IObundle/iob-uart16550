@@ -15,5 +15,5 @@ lint_off -rule UNUSEDSIGNAL -file "**/uart_wb.v" -match "Bits of signal are not 
 // keep all lcr register bits for consistency
 lint_off -rule UNUSEDSIGNAL -file "**/uart_transmitter.v" -match "Bits of signal are not used: 'lcr'[7]*"
 
-// usused module ouptut
+// unused module output
 lint_off -rule PINCONNECTEMPTY -file "**/uart_transmitter.v" -match "Instance pin connected by name with empty reference: 'overrun'*"
