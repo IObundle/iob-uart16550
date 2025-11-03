@@ -130,8 +130,8 @@ module uart_debug_if (  /*AUTOARG*/
       case (wb_adr_i)
          // 8 + 8 + 4 + 4 + 8
          5'b01000: wb_dat32_o = {msr, lcr, iir, ier, lsr};
-         // 5 + 2 + 5 + 4 + 5 + 3
-         5'b01100: wb_dat32_o = {8'b0, fcr, mcr, rf_count, rstate, tf_count, tstate};
+         // 5 + 2 + 9 + 4 + 9 + 3
+         5'b01100: wb_dat32_o = {fcr, mcr, rf_count, rstate, tf_count, tstate};
          default:  wb_dat32_o = 0;
       endcase  // case(wb_adr_i)
 

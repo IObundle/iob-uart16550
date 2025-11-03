@@ -208,11 +208,11 @@ module uart_tfifo (
        begin
       if (wb_rst_i) begin
          top    <= #1 0;
-         bottom <= #1 1'b0;
+         bottom <= #1 0;
          count  <= #1 0;
       end else if (fifo_reset) begin
          top    <= #1 0;
-         bottom <= #1 1'b0;
+         bottom <= #1 0;
          count  <= #1 0;
       end else begin
          case ({

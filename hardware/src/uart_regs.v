@@ -464,7 +464,7 @@ module uart_regs (
        begin
       case (wb_addr_i)
          `UART_REG_RB: wb_dat_o = dlab ? dl[`UART_DL1] : rf_data_out[10:3];
-         `UART_REG_IE: wb_dat_o = dlab ? dl[`UART_DL2] : ier;
+         `UART_REG_IE: wb_dat_o = dlab ? dl[`UART_DL2] : {{4{1'b0}}, ier};
          `UART_REG_II: wb_dat_o = {4'b1100, iir};
          `UART_REG_LC: wb_dat_o = lcr;
          `UART_REG_LS: wb_dat_o = lsr;
@@ -614,8 +614,8 @@ module uart_regs (
    assign lsr2 = rf_data_out[1];  // parity error bit
    assign lsr3 = rf_data_out[0];  // framing error bit
    assign lsr4 = rf_data_out[2];  // break error in the character
-   assign lsr5 = (tf_count == 5'b0 && thre_set_en);  // transmitter fifo is empty
-   assign lsr6 = (tf_count == 5'b0 && thre_set_en && (tstate ==  /*`S_IDLE */ 0));  // transmitter empty
+   assign lsr5 = (tf_count == {`UART_FIFO_COUNTER_W{1'b0}} && thre_set_en);  // transmitter fifo is empty
+   assign lsr6 = (tf_count == {`UART_FIFO_COUNTER_W{1'b0}} && thre_set_en && (tstate ==  /*`S_IDLE */ 0));  // transmitter empty
    assign lsr7 = rf_error_bit | rf_overrun;
 
    // lsr bit0 (receiver data available)
@@ -755,7 +755,7 @@ module uart_regs (
    //
 
    assign rls_int     = ier[`UART_IE_RLS] && (lsr[`UART_LS_OE] || lsr[`UART_LS_PE] || lsr[`UART_LS_FE] || lsr[`UART_LS_BI]);
-   assign rda_int = ier[`UART_IE_RDA] && (rf_count >= {1'b0, trigger_level});
+   assign rda_int = ier[`UART_IE_RDA] && (rf_count >= {{(`UART_FIFO_COUNTER_W-4){1'b0}}, trigger_level});
    assign thre_int = ier[`UART_IE_THRE] && lsr[`UART_LS_TFE];
    assign ms_int = ier[`UART_IE_MS] && (|msr[3:0]);
    assign ti_int = ier[`UART_IE_RDA] && (counter_t == 10'b0) && (|rf_count);
@@ -819,7 +819,7 @@ module uart_regs (
    always @(posedge clk or posedge wb_rst_i)
       if (wb_rst_i) rda_int_pnd <= #1 0;
       else
-         rda_int_pnd <= #1 ((rf_count == {1'b0, trigger_level}) && fifo_read) ? 0 :  // reset condition
+         rda_int_pnd <= #1 ((rf_count == {{(`UART_FIFO_COUNTER_W-4){1'b0}}, trigger_level}) && fifo_read) ? 0 :  // reset condition
          rda_int_rise ? 1 :  // latch condition
          rda_int_pnd && ier[`UART_IE_RDA];  // default operation: remove if masked
 
