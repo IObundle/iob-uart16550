@@ -242,7 +242,6 @@ module uart_receiver (
    reg                             rparity;  // received parity
    reg                             rparity_error;
    reg                             rframing_error;  // framing error flag
-   reg                             rbit_in;
    reg                             rparity_xor;
    reg  [                     7:0] counter_b;  // counts the 0 (low) signals
    reg                             rf_push_q;
@@ -275,7 +274,6 @@ module uart_receiver (
 
    wire       rcounter16_eq_7 = (rcounter16 == 4'd7);
    wire       rcounter16_eq_0 = (rcounter16 == 4'd0);
-   wire       rcounter16_eq_1 = (rcounter16 == 4'd1);
 
    wire [3:0] rcounter16_minus_1 = rcounter16 - 1'b1;
 
@@ -295,7 +293,6 @@ module uart_receiver (
    always @(posedge clk or posedge wb_rst_i) begin
       if (wb_rst_i) begin
          rstate         <= #1 sr_idle;
-         rbit_in        <= #1 1'b0;
          rcounter16     <= #1 0;
          rbit_counter   <= #1 0;
          rparity_xor    <= #1 1'b0;

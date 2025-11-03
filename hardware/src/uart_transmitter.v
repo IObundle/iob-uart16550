@@ -197,7 +197,6 @@ module uart_transmitter (
    wire [    `UART_FIFO_WIDTH-1:0] tf_data_in;
    wire [    `UART_FIFO_WIDTH-1:0] tf_data_out;
    wire                            tf_push;
-   wire                            tf_overrun;
    wire [`UART_FIFO_COUNTER_W-1:0] tf_count;
 
    assign tf_data_in = wb_dat_i;
@@ -209,7 +208,7 @@ module uart_transmitter (
       .data_out    (tf_data_out),
       .push        (tf_push),
       .pop         (tf_pop),
-      .overrun     (tf_overrun),
+      .overrun     (),
       .count       (tf_count),
       .fifo_reset  (tx_reset),
       .reset_status(lsr_mask)
@@ -306,17 +305,17 @@ module uart_transmitter (
             s_send_parity: begin
                if (~|counter) counter <= #1 5'b01111;
                else if (counter == 5'b00001) begin
-                  counter <= #1 4'b0;
+                  counter <= #1 0;
                   tstate  <= #1 s_send_stop;
                end else counter <= #1 counter - 1'b1;
                stx_o_tmp <= #1 bit_out;
             end
             s_send_stop: begin
                if (~|counter) begin
-                  casex ({
+                  casez ({
                      lcr[`UART_LC_SB], lcr[`UART_LC_BITS]
                   })
-                     3'b0xx:  counter <= #1 5'b01101;  // 1 stop bit ok igor
+                     3'b0??:  counter <= #1 5'b01101;  // 1 stop bit ok igor
                      3'b100:  counter <= #1 5'b10101;  // 1.5 stop bit
                      default: counter <= #1 5'b11101;  // 2 stop bits
                   endcase

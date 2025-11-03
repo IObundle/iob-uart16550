@@ -222,11 +222,11 @@ module uart_rfifo (
       // Cannot check '(wb_rst_i | fifo_reset)' because of Quartus issue: https://www.intel.com/content/www/us/en/programmable/quartushelp/18.1/index.htm#msgs/msgs/evrfx_veri_if_condition_does_not_match_sensitivity_list_edge.htm
       if (wb_rst_i) begin
          top    <= #1 0;
-         bottom <= #1 1'b0;
+         bottom <= #1 0;
          count  <= #1 0;
       end else if (fifo_reset) begin
          top    <= #1 0;
-         bottom <= #1 1'b0;
+         bottom <= #1 0;
          count  <= #1 0;
       end else begin
          case ({
