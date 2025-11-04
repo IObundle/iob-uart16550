@@ -9,6 +9,7 @@
 module iob_uart16550_tb;
 
    reg                            clkr;
+   reg                            cker;
    reg                            wb_rst_ir;
    wire    [`UART_ADDR_WIDTH-1:0] wb_adr_i;
    wire    [                31:0] wb_dat_i;
@@ -56,7 +57,7 @@ module iob_uart16550_tb;
 
    iob_uut uart_snd (
       .clk_i (clk),
-      .cke_i (1'b1),
+      .cke_i (cker),
       .arst_i(wb_rst_i),
 
       // Wishbone signals
@@ -84,7 +85,7 @@ module iob_uart16550_tb;
 
    iob_uut uart_rcv (
       .clk_i (clk),
-      .cke_i (1'b1),
+      .cke_i (cker),
       .arst_i(wb_rst_i),
 
       // Wishbone signals
@@ -177,8 +178,11 @@ module iob_uart16550_tb;
 
    // The test sequence
    initial begin
+      cker = 1'b1;
       #1 wb_rst_ir = 1;
+      cker = 1'b0;
       #10 wb_rst_ir = 0;
+      #10 cker = 1'b1;
 
       //write to lcr. set bit 7
       //wb_cyc_ir = 1;
@@ -201,6 +205,29 @@ module iob_uart16550_tb;
             wait (uart_snd.uart16550_inst.uart16550.regs.tstate == 0 && uart_snd.uart16550_inst.uart16550.regs.transmitter.tf_count == 0);
          end
       join
+
+      // Exercise all Write registers
+      // Transmitter Holding Register
+      wbm.wb_wr1(`UART_REG_TR, 4'b0001, 32'hFF);
+      wbm.wb_wr1(`UART_REG_TR, 4'b0001, 32'h0);
+      // Interrupt Enable
+      wbm.wb_wr1(`UART_REG_IE, 4'b0010, 32'hFF00);
+      wbm.wb_wr1(`UART_REG_IE, 4'b0010, 32'h0);
+      // FIFO Control
+      wbm.wb_wr1(`UART_REG_FC, 4'b0100, 32'hFF0000);
+      wbm.wb_wr1(`UART_REG_FC, 4'b0100, 32'h0);
+      wbm.wb_wr1(`UART_REG_FC, 4'b0100, {8'b0, 8'b11000000, 16'b00}); // default value
+      // Line Control
+      wbm.wb_wr1(`UART_REG_LC, 4'b1000, 32'hFF000000);
+      wbm.wb_wr1(`UART_REG_LC, 4'b1000, {8'b11, 24'b00}); // default value
+      // Modem Control
+      wbm.wb_wr1(`UART_REG_MC, 4'b0001, 32'hFF);
+      wbm.wb_wr1(`UART_REG_MC, 4'b0001, 32'b11000000); // default value
+
+      // reset core
+      #1 wb_rst_ir = 1;
+      #10 wb_rst_ir = 0;
+
    end
 
    // receiver side
@@ -224,6 +251,25 @@ module iob_uart16550_tb;
       wbm1.wb_rd1(0, 4'h1, dat_o);
       $display("%m : %t : Data out: %h", $time(), dat_o[7:0]);
       if (dat_o != BYTE_2) failed = failed + 1;
+
+      // Exercise Write registers
+      // Transmitter Holding Register
+      wbm.wb_wr1(`UART_REG_TR, 4'b0001, 32'hFF);
+      wbm.wb_wr1(`UART_REG_TR, 4'b0001, 32'h0);
+      // Interrupt Enable
+      wbm.wb_wr1(`UART_REG_IE, 4'b0010, 32'hFF00);
+      wbm.wb_wr1(`UART_REG_IE, 4'b0010, 32'h0);
+      // FIFO Control
+      wbm.wb_wr1(`UART_REG_FC, 4'b0100, 32'hFF0000);
+      wbm.wb_wr1(`UART_REG_FC, 4'b0100, 32'h0);
+      wbm.wb_wr1(`UART_REG_FC, 4'b0100, {8'b0, 8'b11000000, 16'b00}); // default value
+      // Line Control
+      wbm.wb_wr1(`UART_REG_LC, 4'b1000, 32'hFF000000);
+      wbm.wb_wr1(`UART_REG_LC, 4'b1000, {8'b11, 24'b00}); // default value
+      // Modem Control
+      wbm.wb_wr1(`UART_REG_MC, 4'b0001, 32'hFF);
+      wbm.wb_wr1(`UART_REG_MC, 4'b0001, 32'b11000000); // default value
+
       $display("%m : Finish");
       fd = $fopen("test.log", "w");
       if (!failed) begin
