@@ -65,6 +65,27 @@ int test_single_byte(uint32_t send_addr, uint32_t rcv_addr, uint8_t byte) {
   return failed;
 }
 
+int test_write_regs(uint32_t base_address) {
+  iob_uart16550_csrs_init_baseaddr(base_address);
+  // Transmitter Holding Register
+  iob_uart16550_csrs_set_tr(0xFF);
+  iob_uart16550_csrs_set_tr(0x00);
+  // Interrupt Enable
+  iob_uart16550_csrs_set_ie(0xFF);
+  iob_uart16550_csrs_set_ie(0x00);
+  // FIFO Control
+  iob_uart16550_csrs_set_fc(0xFF);
+  iob_uart16550_csrs_set_fc(0x00);
+  iob_uart16550_csrs_set_fc(0b11000000);
+  // Line Control
+  iob_uart16550_csrs_set_lc(0xFF);
+  iob_uart16550_csrs_set_lc(0b11);
+  // Modem Control
+  iob_uart16550_csrs_set_mc(0xFF);
+  iob_uart16550_csrs_set_mc(0b11000000);
+  return 0;
+}
+
 int iob_core_tb() {
 
   int failed = 0;
@@ -84,6 +105,10 @@ int iob_core_tb() {
   // Send test bytes
   failed += test_single_byte(UART0_BASE, UART1_BASE, BYTE_1);
   failed += test_single_byte(UART0_BASE, UART1_BASE, BYTE_2);
+
+  // Exercise write registers
+  failed += test_write_regs(UART0_BASE);
+  failed += test_write_regs(UART1_BASE);
 
   printf("UART16550 test complete.\n");
   return failed;
