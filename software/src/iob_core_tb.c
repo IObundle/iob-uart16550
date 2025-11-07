@@ -12,6 +12,9 @@
 #define UART0_BASE (0)
 #define UART1_BASE (1 << UART16550_ADDR_W)
 
+#define BYTE_1 (0x81)
+#define BYTE_2 (0x42)
+
 void uart16550_init(uint32_t base_address, uint16_t div) {
   uint8_t div1 = (uint8_t)(div & 0xFF);
   uint8_t div2 = (uint8_t)((div >> 8) & 0xFF);
@@ -33,6 +36,35 @@ void uart16550_init(uint32_t base_address, uint16_t div) {
   iob_uart16550_csrs_set_ie(int_en_cfg);
 }
 
+uint8_t uart_data_ready() {
+  return (iob_uart16550_csrs_get_ls() & (1 << IOB_UART16550_LS_DR));
+}
+
+int test_single_byte(uint32_t send_addr, uint32_t rcv_addr, uint8_t byte) {
+  int failed = 0;
+  int timeout = 500;
+  int ticks = 0;
+
+  // Send test byte
+  iob_uart16550_csrs_init_baseaddr(send_addr);
+  iob_uart16550_csrs_set_tr(byte);
+  printf("Sending: %x\n", byte);
+
+  // Receive test bytes
+  // wait for data ready
+  iob_uart16550_csrs_init_baseaddr(rcv_addr);
+  while ((ticks < timeout) & (uart_data_ready() == 0)) {
+    ticks++;
+  }
+  uint8_t rcv_data = iob_uart16550_csrs_get_rb();
+  printf("Data out: %x\n", rcv_data);
+  if (rcv_data != byte) {
+    printf("Error: expected %x but received %x\n", byte, rcv_data);
+    failed = 1;
+  }
+  return failed;
+}
+
 int iob_core_tb() {
 
   int failed = 0;
@@ -49,7 +81,9 @@ int iob_core_tb() {
   // init UART1
   uart16550_init(UART1_BASE, 3);
 
-  uint32_t i, word;
+  // Send test bytes
+  failed += test_single_byte(UART0_BASE, UART1_BASE, BYTE_1);
+  failed += test_single_byte(UART0_BASE, UART1_BASE, BYTE_2);
 
   printf("UART16550 test complete.\n");
   return failed;
