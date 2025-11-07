@@ -35,12 +35,64 @@
 #define IOB_UART16550_IE_RLS (2)  // Receiver Line Status
 #define IOB_UART16550_IE_MS (3)   // Modem Status
 
+// Interrupt Identification codes bits [3:1]
+#define IOB_UART16550_II_RLS (0b011)  // Receiver Line Status
+#define IOB_UART16550_II_RDA (0b010)  // Receiver Data Available
+#define IOB_UART16550_II_TI (0b110)   // Timeout Indication
+#define IOB_UART16550_II_THRE (0b001) // Transmitter Holding Register empty
+#define IOB_UART16550_II_MS (0b000)   // Modem Status
+
+// FIFO Control Register
+#define IOB_UART16550_FC_RF (1)       // Clear Receive FIFO
+#define IOB_UART16550_FC_TF (2)       // Clear Transmitter FIFO
+#define IOB_UART16550_FC_TL (6)       // Receiver FIFO Trigger Level address
+#define IOB_UART16550_FC_TL_1 (0b00)  // Receiver FIFO Trigger Level: 1 byte
+#define IOB_UART16550_FC_TL_4 (0b01)  // Receiver FIFO Trigger Level: 4 byte
+#define IOB_UART16550_FC_TL_8 (0b10)  // Receiver FIFO Trigger Level: 8 byte
+#define IOB_UART16550_FC_TL_14 (0b11) // Receiver FIFO Trigger Level: 14 byte
+
+// Line Control Register
+#define IOB_UART16550_LC_BITS (0) // Bits per character (0:1)
+#define IOB_UART16550_LC_SB (2)   // Stop bits
+#define IOB_UART16550_LC_PE (3)   // Parity enable
+#define IOB_UART16550_LC_EP (4)   // Even parity
+#define IOB_UART16550_LC_SP (5)   // Stick parity
+#define IOB_UART16550_LC_BC (6)   // Break control
+#define IOB_UART16550_LC_DL (7)   // Divisor latch access
+
+// Modem Control Register
+#define IOB_UART16550_MC_DTR (0)  // Data Terminal Ready
+#define IOB_UART16550_MC_RTS (1)  // Request To Send
+#define IOB_UART16550_MC_OUT1 (2) // Loopback -> Ring Indicator
+#define IOB_UART16550_MC_OUT2 (3) // Loopback -> Data Carrier Detect
+#define IOB_UART16550_MC_LB (4)   // LoopBack mode
+
+// Line Status Register
+#define IOB_UART16550_LS_DR (0)  // Data Ready
+#define IOB_UART16550_LS_OE (1)  // Overrun Error
+#define IOB_UART16550_LS_PE (2)  // Parity Error
+#define IOB_UART16550_LS_FE (3)  // Framing Error
+#define IOB_UART16550_LS_BI (4)  // Break Interrupt
+#define IOB_UART16550_LS_TFE (5) // Transmit FIFO empty
+#define IOB_UART16550_LS_TE (6)  // Transmitter Empty Indicator
+#define IOB_UART16550_LS_EI (7)  // Error indicator
+
+// Modem Status Register
+#define IOB_UART16550_MS_DCTS (0) // Delta Clear To Send
+#define IOB_UART16550_MS_DDSR (1) // Delta Data Set Ready
+#define IOB_UART16550_MS_TERI (2) // Trailing Edge of Ring Indicator
+#define IOB_UART16550_MS_DDCD (3) // Delta Data Carrier Detect
+#define IOB_UART16550_MS_CCTS (4) // Complement signals
+#define IOB_UART16550_MS_CDSR (5)
+#define IOB_UART16550_MS_CRI (6)
+#define IOB_UART16550_MS_CDCD (7)
+
 // Data widths (bit)
 // all CSRS have 8bit
 #define IOB_UART16550_CSRS_W 8
 
 // Base Address
-void iob_uart_csrs_init_baseaddr(uint32_t addr);
+void iob_uart16550_csrs_init_baseaddr(uint32_t addr);
 
 // IO read and write function prototypes
 void iob_write(uint32_t addr, uint32_t data_w, uint32_t value);

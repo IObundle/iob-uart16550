@@ -94,8 +94,7 @@ def setup(py_params_dict):
                 "prefix": "uart0_",
             },
         },
-        # TODO: interrupt, rs232
-        # TODO: UART16550 #1
+        # UART16550 #1
         {
             "name": "uart1_csrs",
             "descr": "uart16550 #1 CSRs interface",
