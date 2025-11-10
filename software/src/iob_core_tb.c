@@ -6,6 +6,7 @@
 
 #include "iob_uart16550_csrs.h"
 
+#include <cstdint>
 #include <stdio.h>
 
 #define UART16550_ADDR_W (5)
@@ -14,6 +15,10 @@
 
 #define BYTE_1 (0x81)
 #define BYTE_2 (0x42)
+
+static inline void set_bit(uint8_t *v, int bit) { *v |= (1 << bit); }
+
+static inline void clr_bit(uint8_t *v, int bit) { *v &= ~(1 << bit); }
 
 void uart16550_init(uint32_t base_address, uint16_t div) {
   uint8_t div1 = (uint8_t)(div & 0xFF);
@@ -36,8 +41,20 @@ void uart16550_init(uint32_t base_address, uint16_t div) {
   iob_uart16550_csrs_set_ie(int_en_cfg);
 }
 
-uint8_t uart_data_ready() {
+inline uint8_t uart_data_ready() {
   return (iob_uart16550_csrs_get_ls() & (1 << IOB_UART16550_LS_DR));
+}
+
+inline uint8_t uart_overrun_error() {
+  return (iob_uart16550_csrs_get_ls() & (1 << IOB_UART16550_LS_OE));
+}
+
+inline uint8_t uart_parity_error() {
+  return (iob_uart16550_csrs_get_ls() & (1 << IOB_UART16550_LS_PE));
+}
+
+inline uint8_t uart_transmitter_empty() {
+  return (iob_uart16550_csrs_get_ls() & (1 << IOB_UART16550_LS_TE));
 }
 
 int test_single_byte(uint32_t send_addr, uint32_t rcv_addr, uint8_t byte) {
@@ -65,6 +82,46 @@ int test_single_byte(uint32_t send_addr, uint32_t rcv_addr, uint8_t byte) {
   return failed;
 }
 
+int test_read_regs(uint32_t base_address) {
+  uint8_t ret = 0;
+
+  // set base address
+  iob_uart16550_csrs_init_baseaddr(base_address);
+
+  ret = iob_uart16550_csrs_get_rb();
+  printf("\tRB: %x\n", ret);
+  ret = iob_uart16550_csrs_get_ie();
+  printf("\tIE: %x\n", ret);
+  ret = iob_uart16550_csrs_get_ii();
+  printf("\tII: %x\n", ret);
+  ret = iob_uart16550_csrs_get_lc();
+  printf("\tLC: %x\n", ret);
+  ret = iob_uart16550_csrs_get_ls();
+  printf("\tLS: %x\n", ret);
+  ret = iob_uart16550_csrs_get_ms();
+  printf("\tMS: %x\n", ret);
+  ret = iob_uart16550_csrs_get_dl1();
+  printf("\tDL1: %x\n", ret);
+  ret = iob_uart16550_csrs_get_dl2();
+  printf("\tDL2: %x\n", ret);
+  return 0;
+}
+
+int test_addr(uint32_t base_address) {
+  uint32_t max_addr = (1 << IOB_UART16550_CSRS_CSRS_ADDR_W) - 1;
+  iob_read(base_address + max_addr, IOB_UART16550_CSRS_W);
+  return 0;
+}
+
+int test_read_debug_regs(uint32_t base_address) {
+  // set base address
+  iob_uart16550_csrs_init_baseaddr(base_address);
+
+  printf("\tDebug1: %x\n", iob_uart16550_csrs_get_db1());
+  printf("\tDebug2: %x\n", iob_uart16550_csrs_get_db2());
+  return 0;
+}
+
 int test_write_regs(uint32_t base_address) {
   iob_uart16550_csrs_init_baseaddr(base_address);
   // Transmitter Holding Register
@@ -84,6 +141,119 @@ int test_write_regs(uint32_t base_address) {
   iob_uart16550_csrs_set_mc(0xFF);
   iob_uart16550_csrs_set_mc(0b11000000);
   return 0;
+}
+
+void reset_uart(uint8_t base_address) {
+  uint8_t cmd = 0;
+  uint8_t ret = 0;
+  iob_uart16550_csrs_init_baseaddr(base_address);
+  // default interrupts
+  iob_uart16550_csrs_set_ie(0x00);
+  ret = iob_uart16550_csrs_get_ii();
+  // Clear FIFOs
+  cmd = (1 << IOB_UART16550_FC_RF);  // clear RX FIFO
+  cmd |= (1 << IOB_UART16550_FC_TF); // clear TX FIFO
+  iob_uart16550_csrs_set_fc(cmd);
+  cmd = 0b11000000;
+  iob_uart16550_csrs_set_fc(cmd); // default value
+  cmd = 0b11;
+  iob_uart16550_csrs_set_lc(cmd); // default value
+  cmd = 0;
+  iob_uart16550_csrs_set_mc(cmd); // default value
+  // clear pending status / data
+  // read data until empty
+  while(uart_data_ready()) {
+    ret = iob_uart16550_csrs_get_rb();
+  }
+  ret = iob_uart16550_csrs_get_ms();
+}
+
+int test_line_status(uint32_t test_base, uint32_t aux_base) {
+  int failed = 0;
+  int timeout = 500;
+  int ticks = 0;
+  int i = 0;
+  uint8_t ret = 0;
+  uint8_t cmd = 0;
+  // bit 0: Data Ready indicator
+  // Send test byte
+  iob_uart16550_csrs_init_baseaddr(aux_base);
+  iob_uart16550_csrs_set_tr(0x55);
+  iob_uart16550_csrs_init_baseaddr(test_base);
+  while ((ticks < timeout) & (uart_data_ready() == 0)) {
+    ticks++;
+  }
+  failed += (ticks >= timeout);
+  if (failed) {
+    printf("Error: Data Ready timeout\n");
+  }
+  // bit 1: Overrun Error - FIFO DEPTH = 256
+  iob_uart16550_csrs_init_baseaddr(aux_base);
+  for (i = 0; i < 256; i++) {
+    iob_uart16550_csrs_set_tr((i & 0xFF));
+    while (uart_transmitter_empty() == 0)
+      ; // wait to send data
+  }
+  iob_uart16550_csrs_init_baseaddr(test_base);
+  failed += (uart_overrun_error() == 0);
+  if (failed) {
+    printf("Error: Overrun Error not set\n");
+  }
+  // reset FIFOs
+  reset_uart(test_base);
+  reset_uart(aux_base);
+  // bit 2: Parity Error indicator
+  // configure each uart with different parity configurations to trigger error
+  iob_uart16550_csrs_init_baseaddr(test_base);
+  cmd = iob_uart16550_csrs_get_lc();
+  set_bit(&cmd, IOB_UART16550_LC_PE); // Parity Enable (1)
+  set_bit(&cmd, IOB_UART16550_LC_EP); // Even Parity Select (1)
+  iob_uart16550_csrs_set_lc(cmd);
+  iob_uart16550_csrs_init_baseaddr(aux_base);
+  cmd = iob_uart16550_csrs_get_lc();
+  set_bit(&cmd, IOB_UART16550_LC_PE); // Parity Enable (1)
+  clr_bit(&cmd, IOB_UART16550_LC_EP); // Even Parity Select (0)
+  iob_uart16550_csrs_set_lc(cmd);
+  iob_uart16550_csrs_init_baseaddr(aux_base);
+  iob_uart16550_csrs_set_tr(0x55);
+  while (uart_transmitter_empty() == 0)
+    ; // wait to send data
+  iob_uart16550_csrs_init_baseaddr(test_base);
+  failed += (uart_parity_error() == 0);
+  if (failed) {
+    printf("Error: Parity Error not set\n");
+  }
+  // reset FIFOs
+  reset_uart(test_base);
+  reset_uart(aux_base);
+  // TODO: bit 3:
+  // TODO: bit 4:
+  // bits 5-7 triggered by previous conditions
+
+  return failed;
+}
+
+int test_rdata(uint32_t read_base, uint32_t write_base) {
+  int failed = 0;
+  uint8_t ret = 0;
+  // rdata[7:0]
+  failed += test_single_byte(write_base, read_base, 0xFF);
+  // TODO: rdata[15:8]
+  // test line status register
+  failed += test_line_status(read_base, write_base);
+  // TODO: rdata[23:16]
+  // test modem status register
+  // rdata[31:24]
+  iob_uart16550_csrs_init_baseaddr(read_base);
+  iob_uart16550_csrs_set_lc(0xFF);
+  ret = iob_uart16550_csrs_get_lc();
+  printf("\tLC: %x\n", ret);
+  iob_uart16550_csrs_set_lc(0b00);
+  ret = iob_uart16550_csrs_get_lc();
+  printf("\tLC: %x\n", ret);
+  iob_uart16550_csrs_set_lc(0b11);
+
+  return failed;
 }
 
 int iob_core_tb() {
@@ -109,6 +279,18 @@ int iob_core_tb() {
   // Exercise write registers
   failed += test_write_regs(UART0_BASE);
   failed += test_write_regs(UART1_BASE);
+
+  // Exercise read registers
+  failed += test_read_regs(UART0_BASE);
+  failed += test_read_debug_regs(UART0_BASE);
+  failed += test_read_regs(UART1_BASE);
+  failed += test_read_debug_regs(UART1_BASE);
+
+  failed += test_addr(UART0_BASE);
+  failed += test_addr(UART1_BASE);
+
+  failed += test_rdata(UART0_BASE, UART1_BASE);
+  failed += test_rdata(UART1_BASE, UART0_BASE);
 
   printf("UART16550 test complete.\n");
   return failed;
