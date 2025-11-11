@@ -16,9 +16,9 @@
 #define BYTE_1 (0x81)
 #define BYTE_2 (0x42)
 
-static inline void set_bit(uint8_t *v, int bit) { *v |= (1 << bit); }
+static inline void set_bit(uint8_t *v, int bit) { (*v) |= (1 << bit); }
 
-static inline void clr_bit(uint8_t *v, int bit) { *v &= ~(1 << bit); }
+static inline void clr_bit(uint8_t *v, int bit) { (*v) &= ~(1 << bit); }
 
 void uart16550_init(uint32_t base_address, uint16_t div) {
   uint8_t div1 = (uint8_t)(div & 0xFF);
@@ -53,8 +53,20 @@ inline uint8_t uart_parity_error() {
   return (iob_uart16550_csrs_get_ls() & (1 << IOB_UART16550_LS_PE));
 }
 
+inline uint8_t uart_framing_error() {
+  return (iob_uart16550_csrs_get_ls() & (1 << IOB_UART16550_LS_FE));
+}
+
 inline uint8_t uart_transmitter_empty() {
   return (iob_uart16550_csrs_get_ls() & (1 << IOB_UART16550_LS_TE));
+}
+
+inline uint8_t uart_break_interrupt() {
+  return (iob_uart16550_csrs_get_ls() & (1 << IOB_UART16550_LS_BI));
+}
+
+inline uint8_t uart_pending_interrupt() {
+  return ((iob_uart16550_csrs_get_ii() & (1 << IOB_UART16550_II_PND)) == 0);
 }
 
 int test_single_byte(uint32_t send_addr, uint32_t rcv_addr, uint8_t byte) {
@@ -162,7 +174,7 @@ void reset_uart(uint8_t base_address) {
   iob_uart16550_csrs_set_mc(cmd); // default value
   // clear pending status / data
   // read data until empty
-  while(uart_data_ready()) {
+  while (uart_data_ready()) {
     ret = iob_uart16550_csrs_get_rb();
   }
   ret = iob_uart16550_csrs_get_ms();
@@ -199,7 +211,6 @@ int test_line_status(uint32_t test_base, uint32_t aux_base) {
   if (failed) {
     printf("Error: Overrun Error not set\n");
   }
-  // reset FIFOs
   reset_uart(test_base);
   reset_uart(aux_base);
   // bit 2: Parity Error indicator
@@ -223,11 +234,51 @@ int test_line_status(uint32_t test_base, uint32_t aux_base) {
   if (failed) {
     printf("Error: Parity Error not set\n");
   }
-  // reset FIFOs
   reset_uart(test_base);
   reset_uart(aux_base);
-  // TODO: bit 3:
-  // TODO: bit 4:
+  // bit 3: Framing Error indicator
+  // mismatching number of character bits: TX sends 8bit, RX expects 5bit, reads
+  // last 3 bits as parity and stop bits
+  iob_uart16550_csrs_init_baseaddr(test_base);
+  cmd = iob_uart16550_csrs_get_lc();
+  clr_bit(&cmd, IOB_UART16550_LC_BITS);
+  clr_bit(&cmd, (IOB_UART16550_LC_BITS + 1)); // 5 bits per character
+  iob_uart16550_csrs_set_lc(cmd);
+  iob_uart16550_csrs_init_baseaddr(aux_base);
+  cmd = iob_uart16550_csrs_get_lc();
+  set_bit(&cmd, IOB_UART16550_LC_BITS);
+  set_bit(&cmd, (IOB_UART16550_LC_BITS + 1)); // 8 bits per character
+  iob_uart16550_csrs_set_lc(cmd);
+  iob_uart16550_csrs_set_tr(0x1F); // 3 MSBs set to 0 (last 3 transmitted bits)
+  while (uart_transmitter_empty() == 0)
+    ; // wait to send data
+  iob_uart16550_csrs_init_baseaddr(test_base);
+  failed += (uart_framing_error() == 0);
+  if (failed) {
+    printf("Error: Framing Error not set\n");
+  }
+  reset_uart(test_base);
+  reset_uart(aux_base);
+  // bit 4: Break Interrupt
+  iob_uart16550_csrs_init_baseaddr(test_base);
+  cmd = iob_uart16550_csrs_get_ie();
+  set_bit(&cmd, (IOB_UART16550_IE_RLS)); // enable Line Status interrupts
+  iob_uart16550_csrs_set_ie(cmd);
+  iob_uart16550_csrs_init_baseaddr(aux_base);
+  cmd = iob_uart16550_csrs_get_lc();
+  set_bit(&cmd, IOB_UART16550_LC_BC); // enable break state
+  iob_uart16550_csrs_set_lc(cmd);
+  iob_uart16550_csrs_init_baseaddr(test_base);
+  // wait for Line Status Interrupt
+  while(uart_pending_interrupt() == 0)
+      ;
+  failed += (uart_break_interrupt() == 0);
+  if (failed) {
+    printf("Error: Break Interrupt not set\n");
+  }
+  reset_uart(test_base);
+  reset_uart(aux_base);
+  //
   // bits 5-7 triggered by previous conditions
 
   return failed;
