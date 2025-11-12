@@ -289,11 +289,11 @@ int test_rdata(uint32_t read_base, uint32_t write_base) {
   uint8_t ret = 0;
   // rdata[7:0]
   failed += test_single_byte(write_base, read_base, 0xFF);
-  // TODO: rdata[15:8]
+  // rdata[15:8]
   // test line status register
   failed += test_line_status(read_base, write_base);
-  // TODO: rdata[23:16]
-  // test modem status register
+  // rdata[23:16]
+  // Modem status register not exercised
   // rdata[31:24]
   iob_uart16550_csrs_init_baseaddr(read_base);
   iob_uart16550_csrs_set_lc(0xFF);
