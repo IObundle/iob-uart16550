@@ -28,14 +28,15 @@
 #define IOB_UART16550_CSRS_DB1_ADDR (8)  // Debug register 1
 #define IOB_UART16550_CSRS_DB2_ADDR (12) // Debug register 2
 
-// TODO: mode register bit defines
 // Interrupt Enable Register bits
 #define IOB_UART16550_IE_RDA (0)  // Received Data Available
 #define IOB_UART16550_IE_THRE (1) // Transmitter Holding Register Empty
 #define IOB_UART16550_IE_RLS (2)  // Receiver Line Status
 #define IOB_UART16550_IE_MS (3)   // Modem Status
 
-// Interrupt Identification codes bits [3:1]
+// Interrupt Identification
+#define IOB_UART16550_II_PND (0) // Pending Interrupt
+// ID Codes bits [3:1]
 #define IOB_UART16550_II_RLS (0b011)  // Receiver Line Status
 #define IOB_UART16550_II_RDA (0b010)  // Receiver Data Available
 #define IOB_UART16550_II_TI (0b110)   // Timeout Indication

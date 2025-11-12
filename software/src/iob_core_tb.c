@@ -6,7 +6,7 @@
 
 #include "iob_uart16550_csrs.h"
 
-#include <cstdint>
+#include <stdint.h>
 #include <stdio.h>
 
 #define UART16550_ADDR_W (5)
@@ -270,8 +270,8 @@ int test_line_status(uint32_t test_base, uint32_t aux_base) {
   iob_uart16550_csrs_set_lc(cmd);
   iob_uart16550_csrs_init_baseaddr(test_base);
   // wait for Line Status Interrupt
-  while(uart_pending_interrupt() == 0)
-      ;
+  while (uart_pending_interrupt() == 0)
+    ;
   failed += (uart_break_interrupt() == 0);
   if (failed) {
     printf("Error: Break Interrupt not set\n");
