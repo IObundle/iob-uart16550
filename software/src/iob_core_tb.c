@@ -41,31 +41,31 @@ void uart16550_init(uint32_t base_address, uint16_t div) {
   iob_uart16550_csrs_set_ie(int_en_cfg);
 }
 
-inline uint8_t uart_data_ready() {
+static inline uint8_t uart_data_ready() {
   return (iob_uart16550_csrs_get_ls() & (1 << IOB_UART16550_LS_DR));
 }
 
-inline uint8_t uart_overrun_error() {
+static inline uint8_t uart_overrun_error() {
   return (iob_uart16550_csrs_get_ls() & (1 << IOB_UART16550_LS_OE));
 }
 
-inline uint8_t uart_parity_error() {
+static inline uint8_t uart_parity_error() {
   return (iob_uart16550_csrs_get_ls() & (1 << IOB_UART16550_LS_PE));
 }
 
-inline uint8_t uart_framing_error() {
+static inline uint8_t uart_framing_error() {
   return (iob_uart16550_csrs_get_ls() & (1 << IOB_UART16550_LS_FE));
 }
 
-inline uint8_t uart_transmitter_empty() {
+static inline uint8_t uart_transmitter_empty() {
   return (iob_uart16550_csrs_get_ls() & (1 << IOB_UART16550_LS_TE));
 }
 
-inline uint8_t uart_break_interrupt() {
+static inline uint8_t uart_break_interrupt() {
   return (iob_uart16550_csrs_get_ls() & (1 << IOB_UART16550_LS_BI));
 }
 
-inline uint8_t uart_pending_interrupt() {
+static inline uint8_t uart_pending_interrupt() {
   return ((iob_uart16550_csrs_get_ii() & (1 << IOB_UART16550_II_PND)) == 0);
 }
 
@@ -95,27 +95,17 @@ int test_single_byte(uint32_t send_addr, uint32_t rcv_addr, uint8_t byte) {
 }
 
 int test_read_regs(uint32_t base_address) {
-  uint8_t ret = 0;
-
   // set base address
   iob_uart16550_csrs_init_baseaddr(base_address);
 
-  ret = iob_uart16550_csrs_get_rb();
-  printf("\tRB: %x\n", ret);
-  ret = iob_uart16550_csrs_get_ie();
-  printf("\tIE: %x\n", ret);
-  ret = iob_uart16550_csrs_get_ii();
-  printf("\tII: %x\n", ret);
-  ret = iob_uart16550_csrs_get_lc();
-  printf("\tLC: %x\n", ret);
-  ret = iob_uart16550_csrs_get_ls();
-  printf("\tLS: %x\n", ret);
-  ret = iob_uart16550_csrs_get_ms();
-  printf("\tMS: %x\n", ret);
-  ret = iob_uart16550_csrs_get_dl1();
-  printf("\tDL1: %x\n", ret);
-  ret = iob_uart16550_csrs_get_dl2();
-  printf("\tDL2: %x\n", ret);
+  printf("\tRB: %x\n", iob_uart16550_csrs_get_rb());
+  printf("\tIE: %x\n", iob_uart16550_csrs_get_ie());
+  printf("\tII: %x\n", iob_uart16550_csrs_get_ii());
+  printf("\tLC: %x\n", iob_uart16550_csrs_get_lc());
+  printf("\tLS: %x\n", iob_uart16550_csrs_get_ls());
+  printf("\tMS: %x\n", iob_uart16550_csrs_get_ms());
+  printf("\tDL1: %x\n", iob_uart16550_csrs_get_dl1());
+  printf("\tDL2: %x\n", iob_uart16550_csrs_get_dl2());
   return 0;
 }
 
@@ -155,7 +145,7 @@ int test_write_regs(uint32_t base_address) {
   return 0;
 }
 
-void reset_uart(uint8_t base_address) {
+void reset_uart(uint32_t base_address) {
   uint8_t cmd = 0;
   uint8_t ret = 0;
   iob_uart16550_csrs_init_baseaddr(base_address);
@@ -175,9 +165,9 @@ void reset_uart(uint8_t base_address) {
   // clear pending status / data
   // read data until empty
   while (uart_data_ready()) {
-    ret = iob_uart16550_csrs_get_rb();
+    iob_uart16550_csrs_get_rb();
   }
-  ret = iob_uart16550_csrs_get_ms();
+  iob_uart16550_csrs_get_ms();
 }
 
 int test_line_status(uint32_t test_base, uint32_t aux_base) {
@@ -185,7 +175,6 @@ int test_line_status(uint32_t test_base, uint32_t aux_base) {
   int timeout = 500;
   int ticks = 0;
   int i = 0;
-  uint8_t ret = 0;
   uint8_t cmd = 0;
   // bit 0: Data Ready indicator
   // Send test byte
@@ -261,7 +250,7 @@ int test_line_status(uint32_t test_base, uint32_t aux_base) {
   // bit 4: Break Interrupt
   iob_uart16550_csrs_init_baseaddr(test_base);
   cmd = iob_uart16550_csrs_get_ie();
-  set_bit(&cmd, (IOB_UART16550_IE_RLS)); // enable Line Status interrupts
+  set_bit(&cmd, IOB_UART16550_IE_RLS); // enable Line Status interrupts
   iob_uart16550_csrs_set_ie(cmd);
   iob_uart16550_csrs_init_baseaddr(aux_base);
   cmd = iob_uart16550_csrs_get_lc();
