@@ -192,6 +192,7 @@ module uart_rfifo (
    wire [               7:0] data8_out;
    // flags FIFO
    reg  [               2:0] fifo                    [fifo_depth];
+   reg  [               2:0] rfifo_flags;
 
    // FIFO pointers
    reg  [fifo_pointer_w-1:0] top;
@@ -202,6 +203,7 @@ module uart_rfifo (
    reg                       overrun;
 
    wire [fifo_pointer_w-1:0] top_plus_1 = top + 1'b1;
+
 
    raminfr #(
       .addr_width(fifo_pointer_w),
@@ -224,11 +226,13 @@ module uart_rfifo (
          bottom <= #1 0;
          count  <= #1 0;
          error_count <= #1 0;
+         rfifo_flags <= #1 0;
       end else if (fifo_reset) begin
          top    <= #1 0;
          bottom <= #1 0;
          count  <= #1 0;
          error_count <= #1 0;
+         rfifo_flags <= #1 0;
       end else begin
          case ({
             push, pop
@@ -239,8 +243,11 @@ module uart_rfifo (
                top       <= #1 top_plus_1;
                fifo[top] <= #1 data_in[2:0];
                count     <= #1 count + 1'b1;
-               if(|data_in) begin
+               if(|data_in[2:0]) begin
                    error_count <= #1 error_count + 1'b1;
+               end
+               if (count == 0) begin
+                   rfifo_flags <= #1 data_in[2:0];
                end
             end
             2'b01:
@@ -248,19 +255,21 @@ module uart_rfifo (
                fifo[bottom] <= #1 0;
                bottom       <= #1 bottom + 1'b1;
                count        <= #1 count - 1'b1;
-               if(|data_out) begin
+               if(|rfifo_flags) begin
                    error_count <= #1 error_count - 1'b1;
                end
+               rfifo_flags <= #1 fifo[bottom + 1'b1];
             end
             2'b11: begin
                bottom    <= #1 bottom + 1'b1;
                top       <= #1 top_plus_1;
                fifo[top] <= #1 data_in[2:0];
-               case ({(|data_in[2:0]),(|data_out[2:0])})
+               case ({(|data_in[2:0]),(|rfifo_flags)})
                    2'b10: error_count <= #1 error_count + 1'b1;
                    2'b01: error_count <= #1 error_count - 1'b1;
                    default: error_count <= #1 error_count;
                endcase
+               rfifo_flags <= #1 fifo[bottom + 1'b1];
             end
             default: ;
          endcase
@@ -276,14 +285,6 @@ module uart_rfifo (
 
 
    // please note though that data_out is only valid one clock after pop signal
-   reg [2:0] rfifo_flags;
-   always @* begin
-       if(|count) begin
-           rfifo_flags = fifo[bottom];
-       end else begin
-           rfifo_flags = 3'b0;
-       end
-   end
    assign data_out = {data8_out, rfifo_flags};
 
    // Additional logic for detection of error conditions (parity and framing) inside the FIFO

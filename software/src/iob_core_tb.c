@@ -31,7 +31,7 @@ void uart16550_init(uint32_t base_address, uint16_t div) {
   iob_uart16550_csrs_set_dl1(div1);
   iob_uart16550_csrs_set_dl2(div2);
 
-  // set FIFO trigger level: 14 bits
+  // set FIFO trigger level: 14 bytes
   iob_uart16550_csrs_set_fc(IOB_UART16550_FC_TL_14 << IOB_UART16550_FC_TL);
 
   // set interrupt configuration
@@ -82,7 +82,7 @@ int test_single_byte(uint32_t send_addr, uint32_t rcv_addr, uint8_t byte) {
   // Receive test bytes
   // wait for data ready
   iob_uart16550_csrs_init_baseaddr(rcv_addr);
-  while ((ticks < timeout) & (uart_data_ready() == 0)) {
+  while ((ticks < timeout) && (uart_data_ready() == 0)) {
     ticks++;
   }
   uint8_t rcv_data = iob_uart16550_csrs_get_rb();
@@ -192,7 +192,7 @@ int test_line_status(uint32_t test_base, uint32_t aux_base) {
   iob_uart16550_csrs_init_baseaddr(aux_base);
   iob_uart16550_csrs_set_tr(0x55);
   iob_uart16550_csrs_init_baseaddr(test_base);
-  while ((ticks < timeout) & (uart_data_ready() == 0)) {
+  while ((ticks < timeout) && (uart_data_ready() == 0)) {
     ticks++;
   }
   failed += (ticks >= timeout);
@@ -225,7 +225,6 @@ int test_line_status(uint32_t test_base, uint32_t aux_base) {
   set_bit(&cmd, IOB_UART16550_LC_PE); // Parity Enable (1)
   clr_bit(&cmd, IOB_UART16550_LC_EP); // Even Parity Select (0)
   iob_uart16550_csrs_set_lc(cmd);
-  iob_uart16550_csrs_init_baseaddr(aux_base);
   iob_uart16550_csrs_set_tr(0x55);
   while (uart_transmitter_empty() == 0)
     ; // wait to send data
