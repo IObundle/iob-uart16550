@@ -147,11 +147,10 @@ int test_write_regs(uint32_t base_address) {
 
 void reset_uart(uint32_t base_address) {
   uint8_t cmd = 0;
-  uint8_t ret = 0;
   iob_uart16550_csrs_init_baseaddr(base_address);
   // default interrupts
   iob_uart16550_csrs_set_ie(0x00);
-  ret = iob_uart16550_csrs_get_ii();
+  iob_uart16550_csrs_get_ii();
   // Clear FIFOs
   cmd = (1 << IOB_UART16550_FC_RF);  // clear RX FIFO
   cmd |= (1 << IOB_UART16550_FC_TF); // clear TX FIFO
@@ -172,6 +171,7 @@ void reset_uart(uint32_t base_address) {
 
 int test_line_status(uint32_t test_base, uint32_t aux_base) {
   int failed = 0;
+  int fail_cnt = 0;
   int timeout = 500;
   int ticks = 0;
   int i = 0;
@@ -184,7 +184,8 @@ int test_line_status(uint32_t test_base, uint32_t aux_base) {
   while ((ticks < timeout) && (uart_data_ready() == 0)) {
     ticks++;
   }
-  failed += (ticks >= timeout);
+  failed = (ticks >= timeout);
+  fail_cnt += failed;
   if (failed) {
     printf("Error: Data Ready timeout\n");
   }
@@ -196,7 +197,8 @@ int test_line_status(uint32_t test_base, uint32_t aux_base) {
       ; // wait to send data
   }
   iob_uart16550_csrs_init_baseaddr(test_base);
-  failed += (uart_overrun_error() == 0);
+  failed = (uart_overrun_error() == 0);
+  fail_cnt += failed;
   if (failed) {
     printf("Error: Overrun Error not set\n");
   }
@@ -218,7 +220,8 @@ int test_line_status(uint32_t test_base, uint32_t aux_base) {
   while (uart_transmitter_empty() == 0)
     ; // wait to send data
   iob_uart16550_csrs_init_baseaddr(test_base);
-  failed += (uart_parity_error() == 0);
+  failed = (uart_parity_error() == 0);
+  fail_cnt += failed;
   if (failed) {
     printf("Error: Parity Error not set\n");
   }
@@ -241,7 +244,8 @@ int test_line_status(uint32_t test_base, uint32_t aux_base) {
   while (uart_transmitter_empty() == 0)
     ; // wait to send data
   iob_uart16550_csrs_init_baseaddr(test_base);
-  failed += (uart_framing_error() == 0);
+  failed = (uart_framing_error() == 0);
+  fail_cnt += failed;
   if (failed) {
     printf("Error: Framing Error not set\n");
   }
@@ -260,7 +264,8 @@ int test_line_status(uint32_t test_base, uint32_t aux_base) {
   // wait for Line Status Interrupt
   while (uart_pending_interrupt() == 0)
     ;
-  failed += (uart_break_interrupt() == 0);
+  failed = (uart_break_interrupt() == 0);
+  fail_cnt += failed;
   if (failed) {
     printf("Error: Break Interrupt not set\n");
   }
@@ -269,7 +274,7 @@ int test_line_status(uint32_t test_base, uint32_t aux_base) {
   //
   // bits 5-7 triggered by previous conditions
 
-  return failed;
+  return fail_cnt;
 }
 
 int test_rdata(uint32_t read_base, uint32_t write_base) {

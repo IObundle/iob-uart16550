@@ -43,11 +43,27 @@ void iob_uart16550_csrs_set_tr(uint8_t value) {
 }
 
 uint8_t iob_uart16550_csrs_get_ie() {
-  return iob_read(base + IOB_UART16550_CSRS_IE_ADDR, IOB_UART16550_CSRS_W);
+  // ensure LCR bit 7 is 0
+  uint8_t lcr = iob_uart16550_csrs_get_lc();
+  uint8_t lcr_tmp = lcr;
+  clr_bit(&lcr_tmp, IOB_UART16550_LC_DL);
+  iob_uart16550_csrs_set_lc(lcr_tmp);
+  uint8_t rcv_buf =
+      iob_read(base + IOB_UART16550_CSRS_IE_ADDR, IOB_UART16550_CSRS_W);
+  // restore LCR value
+  iob_uart16550_csrs_set_lc(lcr);
+  return rcv_buf;
 }
 
 void iob_uart16550_csrs_set_ie(uint8_t value) {
+  // ensure LCR bit 7 is 0
+  uint8_t lcr = iob_uart16550_csrs_get_lc();
+  uint8_t lcr_tmp = lcr;
+  clr_bit(&lcr_tmp, IOB_UART16550_LC_DL);
+  iob_uart16550_csrs_set_lc(lcr_tmp);
   iob_write(base + IOB_UART16550_CSRS_IE_ADDR, IOB_UART16550_CSRS_W, value);
+  // restore LCR value
+  iob_uart16550_csrs_set_lc(lcr);
 }
 
 uint8_t iob_uart16550_csrs_get_ii() {
