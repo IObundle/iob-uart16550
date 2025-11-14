@@ -4,6 +4,16 @@
 
 
 def setup(py_params_dict):
+    params = {
+        # Type of interface for CSR bus
+        "csr_if": "iob",
+    }
+
+    # Update params with values from py_params_dict
+    for param in py_params_dict:
+        if param in params:
+            params[param] = py_params_dict[param]
+
     attributes_dict = {
         "name": "iob_uut",
         "generate_hw": True,
@@ -16,7 +26,7 @@ def setup(py_params_dict):
             "name": "ADDR_W",
             "descr": "Data bus width",
             "type": "P",
-            "val": 5,
+            "val": 6,  # 2x UART16550 registers
         },
         {
             "name": "DATA_W",
@@ -37,30 +47,12 @@ def setup(py_params_dict):
             },
         },
         {
-            "name": "wb_s",
-            "descr": "Testbench uart csrs interface",
+            "name": "pbus_s",
+            "descr": "Testbench UART16550 sim wrapper csrs interface",
             "signals": {
-                "type": "wb",
-                "ADDR_W": "ADDR_W",
+                "type": "iob",
+                "ADDR_W": 6,
             },
-        },
-        {
-            "name": "rs232_m",
-            "descr": "UART rs232 signals",
-            "signals": {
-                "type": "rs232",
-            },
-        },
-        {
-            "name": "interrupt_o",
-            "descr": "UART16550 interrupt signal",
-            "signals": [
-                {
-                    "name": "int_o",
-                    "width": "1",
-                    "descr": "UART interrupt source",
-                },
-            ],
         },
     ]
     #
@@ -68,12 +60,66 @@ def setup(py_params_dict):
     #
     attributes_dict["wires"] = [
         {
-            "name": "uart_cbus",
-            "descr": "UART CSRs bus",
+            "name": "split_reset",
+            "descr": "Reset signal for iob_split components",
+            "signals": [
+                {"name": "arst_i"},
+            ],
+        },
+        # UART16550 #0
+        {
+            "name": "uart0_csrs",
+            "descr": "uart16550 #0 CSRs interface",
             "signals": {
                 "type": "iob",
-                "prefix": "internal_",
-                "ADDR_W": "ADDR_W",
+                "prefix": "uart16550_0_csrs_",
+                "ADDR_W": 5,
+            },
+        },
+        {
+            "name": "uart0_interrupt",
+            "descr": "UART16550 #0 Interrupt signal",
+            "signals": [
+                {
+                    "name": "uart16550_0_interrupt",
+                    "width": "1",
+                },
+            ],
+        },
+        {
+            "name": "uart0_rs232",
+            "descr": "uart16550 #0 RS232 interface",
+            "signals": {
+                "type": "rs232",
+                "prefix": "uart0_",
+            },
+        },
+        # UART16550 #1
+        {
+            "name": "uart1_csrs",
+            "descr": "uart16550 #1 CSRs interface",
+            "signals": {
+                "type": "iob",
+                "prefix": "uart16550_1_csrs_",
+                "ADDR_W": 5,
+            },
+        },
+        {
+            "name": "uart1_interrupt",
+            "descr": "UART16550 #1 Interrupt signal",
+            "signals": [
+                {
+                    "name": "uart16550_1_interrupt",
+                    "width": "1",
+                },
+            ],
+        },
+        {
+            "name": "uart1_rs232",
+            "descr": "uart16550 #1 RS232 interface",
+            "signals": {
+                "type": "rs232",
+                "prefix": "uart1_",
             },
         },
     ]
@@ -82,29 +128,54 @@ def setup(py_params_dict):
     #
     attributes_dict["subblocks"] = [
         {
-            "core_name": "iob_wishbone2iob",
-            "instance_name": "wishbone2iob",
-            "instance_description": "Wishbone to IOb converter.",
-            "parameters": {
-                "ADDR_W": "ADDR_W",
-                "DATA_W": "DATA_W",
-            },
+            "core_name": "iob_uart16550",
+            "instance_name": "uart16550_inst0",
+            "instance_description": "Unit Under Test (UUT) UART16550 instance 0.",
             "connect": {
                 "clk_en_rst_s": "clk_en_rst_s",
-                "wb_s": "wb_s",
-                "iob_m": "uart_cbus",
+                "iob_csrs_cbus_s": "uart0_csrs",
+                "rs232_m": "uart0_rs232",
+                "interrupt_o": "uart0_interrupt",
             },
         },
         {
             "core_name": "iob_uart16550",
-            "instance_name": "uart16550_inst",
-            "instance_description": "Unit Under Test (UUT) UART16550 instance.",
+            "instance_name": "uart16550_inst1",
+            "instance_description": "Unit Under Test (UUT) UART16550 instance 1.",
             "connect": {
                 "clk_en_rst_s": "clk_en_rst_s",
-                "iob_csrs_cbus_s": "uart_cbus",
-                "rs232_m": "rs232_m",
-                "interrupt_o": "interrupt_o",
+                "iob_csrs_cbus_s": "uart1_csrs",
+                "rs232_m": "uart1_rs232",
+                "interrupt_o": "uart1_interrupt",
             },
+        },
+        {
+            "core_name": "iob_split",
+            "name": "tb_pbus_split",
+            "instance_name": "iob_pbus_split",
+            "instance_description": "Split between testbench peripherals",
+            "connect": {
+                "clk_en_rst_s": "clk_en_rst_s",
+                "reset_i": "split_reset",
+                "input_s": "pbus_s",
+                "output_0_m": "uart0_csrs",
+                "output_1_m": "uart1_csrs",
+            },
+            "num_outputs": 2,
+            "addr_w": 6,
+        },
+    ]
+    #
+    # Snippets
+    #
+    attributes_dict["snippets"] = [
+        {
+            "verilog_code": """
+        assign uart1_rs232_rxd = uart0_rs232_txd;
+        assign uart0_rs232_rxd = uart1_rs232_txd;
+        assign uart0_rs232_cts = 1'b1;
+        assign uart1_rs232_cts = 1'b1;
+            """,
         },
     ]
 
