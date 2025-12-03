@@ -72,7 +72,7 @@ board_server_status:
 
 clean:
 	nix-shell --run "py2hwsw $(CORE) clean --build_dir '$(BUILD_DIR)'"
-	@rm -rf ../*.summary ../*.rpt
+	@rm -rf ../*.summary ../*.rpt fusesoc_exports *.core
 	@find . -name \*~ -delete
 
 # Remove all __pycache__ folders with python bytecode
@@ -92,10 +92,34 @@ tester-fpga-run:
 
 .PHONY: tester-sim-run tester-fpga-run
 
+# FuseSoC
+
+fusesoc-export: clean setup
+	nix-shell --run "py2hwsw $(CORE) export_fusesoc --build_dir '$(BUILD_DIR)'"
+
+.PHONY: fusesoc-export
+
+define MULTILINE_TEXT
+provider:
+  name: url
+  url: https://github.com/IObundle/iob-uart16550/releases/latest/download/$(CORE)_V$(VERSION).tar.gz
+  filetype: tar
+endef
+
+# Generate independent fusesoc .core file. FuseSoC will obtain the Verilog sources from remote url with a pre-built build directory.
+export MULTILINE_TEXT
+fusesoc-core-file: fusesoc-export
+	cp fusesoc_exports/$(CORE).core .
+	# Append provider remote url to .core file
+	printf "\n%s\n" "$$MULTILINE_TEXT" >> $(CORE).core
+	echo "Generated independent $(CORE).core file."
+
+.PHONY: fusesoc-core-file
+
 # Release Artifacts
 
 release-artifacts:
-	nix-shell --run "make clean setup"
-	tar -czf $(CORE)_V$(VERSION).tar.gz ../$(CORE)_V$(VERSION)
+	make fusesoc-export
+	tar -czf $(CORE)_V$(VERSION).tar.gz -C ./fusesoc_exports .
 
 .PHONY: release-artifacts
