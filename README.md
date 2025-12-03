@@ -22,6 +22,13 @@ The main commands to use the Py2HWSW workflow are:
 An example of cleaning a previous build, creating a new build and simulating the project is:
 - `make clean && make setup && make -C ../iob_uart16550_V0.10 sim-run`
 
+## Pre-built files
+
+A [FuseSoC](https://github.com/olofk/fusesoc)-compatible pre-built version of IOb-uart16550 is available in the [repository's release page](https://github.com/IObundle/iob-uart16550/releases).
+The core's Verilog sources are available in the `iob_uart16550/hardware/src/` directory of the compressed tar.gz file in the release page.
+
+To use this pre-built core in FuseSoC, extract the compressed tar.gz files to a [FuseSoC library directory](https://fusesoc.readthedocs.io/en/stable/user/overview.html#discover-cores-the-package-manager).
+
 ## Funding
 
 This core is used as part of the [SoCLinux](https://nlnet.nl/project/SoCLinux) project. This project is funded through [NGI Zero Core](https://nlnet.nl/core), a fund established by [NLnet](https://nlnet.nl) with financial support from the European Commission's [Next Generation Internet](https://ngi.eu) program. Learn more at the [NLnet project page](https://nlnet.nl/project/SoCLinux).
