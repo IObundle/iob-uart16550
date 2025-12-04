@@ -27,7 +27,7 @@ An example of cleaning a previous build, creating a new build and simulating the
 A [FuseSoC](https://github.com/olofk/fusesoc)-compatible pre-built version of IOb-uart16550 is available in the [repository's release page](https://github.com/IObundle/iob-uart16550/releases).
 The core's Verilog sources are available in the `iob_uart16550/hardware/src/` directory of the compressed tar.gz file in the release page.
 
-To use this pre-built core in FuseSoC, extract the compressed tar.gz files to a [FuseSoC library directory](https://fusesoc.readthedocs.io/en/stable/user/overview.html#discover-cores-the-package-manager).
+To use this pre-built core in FuseSoC, extract the compressed tar.gz file to a [FuseSoC library directory](https://fusesoc.readthedocs.io/en/stable/user/overview.html#discover-cores-the-package-manager).
 
 ## Funding
 
