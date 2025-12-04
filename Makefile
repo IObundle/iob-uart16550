@@ -106,7 +106,7 @@ provider:
   filetype: tar
 endef
 
-# Generate independent fusesoc .core file. FuseSoC will obtain the Verilog sources from remote url with a pre-built build directory.
+# Generate standalone FuseSoC .core file that references pre-built sources from the GitHub releases page.
 export MULTILINE_TEXT
 fusesoc-core-file: fusesoc-export
 	cp fusesoc_exports/$(CORE).core .
