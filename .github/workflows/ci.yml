@@ -52,6 +52,8 @@ jobs:
         run: git clean -ffdx
       - name: yosys synthesis
         run: make syn-build
+      - name: vivado synthesis
+        run: make fpga-test
   doc:
     runs-on: self-hosted
     timeout-minutes: 60
