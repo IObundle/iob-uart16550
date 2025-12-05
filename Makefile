@@ -32,13 +32,16 @@ sim-run:
 sim-test:
 	nix-shell --run "make clean setup && make -C ../$(CORE)_V$(VERSION)/ sim-run SIMULATOR=icarus"
 
+fpga-build:
+	nix-shell --run "make clean setup"
+	make -C ../$(CORE)_V$(VERSION)/ fpga-build BOARD=$(BOARD)
+
 fpga-run:
 	nix-shell --run "make clean setup && make -C ../$(CORE)_V$(VERSION)/ fpga-sw-build BOARD=$(BOARD)"
 	make -C ../$(CORE)_V$(VERSION)/ fpga-run BOARD=$(BOARD)
 
 fpga-test:
-	make clean setup fpga-run BOARD=iob_cyclonev_gt_dk
-	make clean setup fpga-run BOARD=iob_aes_ku040_db_g
+	make clean setup fpga-build BOARD=iob_aes_ku040_db_g
 
 syn-build: clean
 	nix-shell --run "make setup && make -C ../$(CORE)_V$(VERSION)/ syn-build SYNTHESIZER=$(SYNTHESIZER)"

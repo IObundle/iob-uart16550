@@ -7,6 +7,7 @@ def setup(py_params_dict):
     attributes_dict = {
         "generate_hw": True,
         "version": "0.1",
+        "board_list": ["iob_aes_ku040_db_g"],
         #
         # Confs
         #
