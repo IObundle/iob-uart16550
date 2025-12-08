@@ -6,6 +6,7 @@
 def setup(py_params_dict):
     attributes_dict = {
         "generate_hw": True,
+        "description": "IObundle's adaptation of the UART16550 from https://opencores.org/projects/uart16550.",
         "version": "0.1",
         "board_list": ["iob_aes_ku040_db_g"],
         #
