@@ -157,11 +157,11 @@ def setup(py_params_dict):
             "connect": {
                 "clk_en_rst_s": "clk_en_rst_s",
                 "reset_i": "split_reset",
-                "input_s": "pbus_s",
-                "output_0_m": "uart0_csrs",
-                "output_1_m": "uart1_csrs",
+                "s_s": "pbus_s",
+                "m_0_m": "uart0_csrs",
+                "m_1_m": "uart1_csrs",
             },
-            "num_outputs": 2,
+            "num_managers": 2,
             "addr_w": 6,
         },
     ]
