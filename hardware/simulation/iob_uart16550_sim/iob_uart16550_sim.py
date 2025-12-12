@@ -77,6 +77,15 @@ def setup(py_params_dict):
             },
         },
         {
+            "name": "uart0_cbus",
+            "descr": "Testbench uart csrs bus",
+            "signals": {
+                "type": params["csr_if"],
+                "prefix": "internal_uart0_",
+                "ADDR_W": 5,
+            },
+        },
+        {
             "name": "uart0_interrupt",
             "descr": "UART16550 #0 Interrupt signal",
             "signals": [
@@ -105,6 +114,15 @@ def setup(py_params_dict):
             },
         },
         {
+            "name": "uart1_cbus",
+            "descr": "Testbench uart csrs bus",
+            "signals": {
+                "type": params["csr_if"],
+                "prefix": "internal1_uart1_",
+                "ADDR_W": 5,
+            },
+        },
+        {
             "name": "uart1_interrupt",
             "descr": "UART16550 #1 Interrupt signal",
             "signals": [
@@ -126,25 +144,62 @@ def setup(py_params_dict):
     #
     # Blocks
     #
+    converter_connect0 = {
+        "s_s": "uart0_csrs",
+        "m_m": "uart0_cbus",
+    }
+    converter_connect1 = {
+        "s_s": "uart1_csrs",
+        "m_m": "uart1_cbus",
+    }
+    if params["csr_if"] != "iob":
+        converter_connect0["clk_en_rst_s"] = "clk_en_rst_s"
+        converter_connect1["clk_en_rst_s"] = "clk_en_rst_s"
     attributes_dict["subblocks"] = [
+        {
+            "core_name": "iob_universal_converter",
+            "instance_name": "iob_universal_converter0",
+            "instance_description": "Convert IOb port from testbench into correct interface for UART CSRs bus",
+            "subordinate_if": "iob",
+            "manager_if": params["csr_if"],
+            "parameters": {
+                "ADDR_W": 5,
+                "DATA_W": "DATA_W",
+            },
+            "connect": converter_connect0,
+        },
         {
             "core_name": "iob_uart16550",
             "instance_name": "uart16550_inst0",
             "instance_description": "Unit Under Test (UUT) UART16550 instance 0.",
+            "csr_if": params["csr_if"],
             "connect": {
                 "clk_en_rst_s": "clk_en_rst_s",
-                "iob_csrs_cbus_s": "uart0_csrs",
+                "iob_csrs_cbus_s": "uart0_cbus",
                 "rs232_m": "uart0_rs232",
                 "interrupt_o": "uart0_interrupt",
             },
         },
         {
+            "core_name": "iob_universal_converter",
+            "instance_name": "iob_universal_converter1",
+            "instance_description": "Convert IOb port from testbench into correct interface for UART CSRs bus",
+            "subordinate_if": "iob",
+            "manager_if": params["csr_if"],
+            "parameters": {
+                "ADDR_W": 5,
+                "DATA_W": "DATA_W",
+            },
+            "connect": converter_connect1,
+        },
+        {
             "core_name": "iob_uart16550",
             "instance_name": "uart16550_inst1",
             "instance_description": "Unit Under Test (UUT) UART16550 instance 1.",
+            "csr_if": params["csr_if"],
             "connect": {
                 "clk_en_rst_s": "clk_en_rst_s",
-                "iob_csrs_cbus_s": "uart1_csrs",
+                "iob_csrs_cbus_s": "uart1_cbus",
                 "rs232_m": "uart1_rs232",
                 "interrupt_o": "uart1_interrupt",
             },

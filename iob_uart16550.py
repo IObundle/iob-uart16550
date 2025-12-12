@@ -4,7 +4,11 @@
 
 
 def setup(py_params_dict):
+    CSR_IF = py_params_dict["csr_if"] if "csr_if" in py_params_dict else "iob"
+    NAME = py_params_dict["name"] if "name" in py_params_dict else "iob_uart16550"
+
     attributes_dict = {
+        "name": NAME,
         "generate_hw": True,
         "description": "IObundle's adaptation of the UART16550 from https://opencores.org/projects/uart16550.",
         "version": "0.1",
@@ -41,8 +45,8 @@ def setup(py_params_dict):
                 "name": "iob_csrs_cbus_s",
                 "descr": "Control and Status Registers interface",
                 "signals": {
-                    "type": "iob",
-                    "ADDR_W": 5,
+                    "type": CSR_IF,
+                    "ADDR_W": "ADDR_W",
                 },
             },
             {
@@ -78,14 +82,18 @@ def setup(py_params_dict):
                 },
             },
         ],
-        #
-        # Blocks
-        #
+    }
+    #
+    # Blocks
+    #
+    attributes_dict |= {
         "subblocks": [
             {
-                "core_name": "iob_iob2wishbone",
-                "instance_name": "iob2wishbone",
-                "instance_description": "IOb to Wishbone converter.",
+                "core_name": "iob_universal_converter",
+                "instance_name": "iob_universal_converter",
+                "instance_description": "Convert CSRs interface into internal IOb port",
+                "subordinate_if": CSR_IF,
+                "manager_if": "wb",
                 "parameters": {
                     "ADDR_W": "ADDR_W",
                     "DATA_W": "DATA_W",
@@ -93,8 +101,8 @@ def setup(py_params_dict):
                 },
                 "connect": {
                     "clk_en_rst_s": "clk_en_rst_s",
-                    "iob_s": "iob_csrs_cbus_s",
-                    "wb_m": "internal_uart_cbus",
+                    "s_s": "iob_csrs_cbus_s",
+                    "m_m": "internal_uart_cbus",
                 },
             },
             {  # Priority encoder for uart_top.v
@@ -107,6 +115,7 @@ def setup(py_params_dict):
             {
                 "core_name": "iob_uart16550_sim",
                 "dest_dir": "hardware/simulation/src",
+                "csr_if": CSR_IF,
             },
         ],
         "sw_modules": [
