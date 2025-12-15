@@ -19,7 +19,7 @@ def setup(py_params_dict):
         "confs": [
             {
                 "name": "ADDR_W",
-                "descr": "Data bus width",
+                "descr": "Address bus width",
                 "type": "P",
                 "val": 5,
             },
@@ -91,7 +91,7 @@ def setup(py_params_dict):
             {
                 "core_name": "iob_universal_converter",
                 "instance_name": "iob_universal_converter",
-                "instance_description": "Convert CSRs interface into internal IOb port",
+                "instance_description": "Convert CSRs interface into internal wishbone bus",
                 "subordinate_if": CSR_IF,
                 "manager_if": "wb",
                 "parameters": {
