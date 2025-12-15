@@ -1,0 +1,22 @@
+% SPDX-FileCopyrightText: 2025 IObundle
+%
+% SPDX-License-Identifier: MIT
+
+The core implements the IOb Native SoC bus interface by default for communication with the
+system. It has an 8-bit data bus for compatibility reason. The core requires one interrupt.
+It requires 2 pads in the chip (serial in and serial out) and, optionally, another six modem
+control signals, which can otherwise be implemented using general purpose I/Os on the
+chip.
+
+The block diagram of the core is shown in Figure \ref{fig:bd}. It contains the following main components:
+\begin{itemize}
+    \item IOb Native bus interface
+    \item Receiver (FIFO, shift register, logic)
+    \item Transmitter (FIFO, shift register, logic)
+    \item Baud Generator Logic
+    \item Registers: Line Status, Line Control, FIFO Control, Interrupt ID, Interrupt Enable, Modem Status, Modem Control, and Divisor Latches.
+    \item Interrupt Logic
+    \item Modem Signals Logic
+\end{itemize}
+
+Figure \ref{fig:bd} is a recreation of the block diagram from the original specification document. The original source file for the diagram was not available.
