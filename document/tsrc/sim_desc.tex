@@ -1,0 +1,26 @@
+% SPDX-FileCopyrightText: 2025 IObundle
+%
+% SPDX-License-Identifier: MIT
+
+The UART16550 testbench is configured to connect the IOb-UART16550 core's RS232 interface in loopback mode. The testbench architecture involves the following components and data flow:
+
+\begin{itemize}
+  \item Contains two instances of the IOb-UART16550 core: UART0 and UART1.
+  \item Contains two instances of the iob\_universal\_converter core, one for each UART. The universal converter is used to convert the Testbench's IOb bus to the corresponding UART's CSR bus type.
+  \item Contains a split core to route the testbench commands to the correct UART.
+\end{itemize}
+
+The testbench controller orchestrates the test sequence as follows:
+
+\begin{enumerate}
+  \item Initializes all components.
+  \item Write test data to UART0 and read back the data via UART1 for comparison.
+  \item Exercise write registers.
+  \item Exercise read registers.
+  \item Try to read highest CSR address.
+  \item Transfer data between both UARTs and test receive CSRs.
+\end{enumerate}
+
+% Ensure that testbench figure is placed in this section
+\FloatBarrier
+
