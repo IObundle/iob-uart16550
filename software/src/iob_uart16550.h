@@ -56,7 +56,7 @@
  * @def ACK
  *
  * @brief Acknowledge.
- * Signal reception of incomming message.
+ * Signal reception of incoming message.
  */
 /**
  * @def FTX
@@ -83,7 +83,7 @@
 /** @brief Initialize UART16550.
  *
  * Reset UART16550, set IOb-UART16550 base address and set the division factor.
- * The division factor is the number of clock cycles per simbol transfered.
+ * The division factor is the number of clock cycles per symbol transfered.
  *
  * For example, for a case with fclk = 100 Mhz for a baudrate of 115200 we
  * should have `div=(100*10^6/115200) = (868)`.
@@ -138,7 +138,7 @@ char uart16550_rxready();
 
 /** @brief Wait for RX Data.
  *
- * Active wait for RX incomming data.
+ * Active wait for RX incoming data.
  *
  * @return void.
  */
@@ -166,7 +166,7 @@ void uart16550_puts(const char *s);
  *
  * Send variable size file via UART16550.
  * Order of commands:
- *  1. Send file transmit (FTX) comnand.
+ *  1. Send file transmit (FTX) command.
  *  2. Send file_name.
  *  3. Send file_size (in little endian format).
  *  4. Send file.
@@ -196,10 +196,10 @@ char uart16550_getc();
  *  4. Send ACK command.
  *  5. Receive file.
  *
- * If memory pointer is not inicialized, allocates memory for incomming file.
+ * If memory pointer is not initialized, allocates memory for incoming file.
  *
  * @param file_name Pointer to file name string.
- * @param mem Pointer in memory to store incomming file.
+ * @param mem Pointer in memory to store incoming file.
  * @return Size of received file.
  */
 int uart16550_recvfile(char *file_name, char *mem);

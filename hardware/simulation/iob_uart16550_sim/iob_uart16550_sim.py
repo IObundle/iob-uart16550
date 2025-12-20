@@ -118,7 +118,7 @@ def setup(py_params_dict):
             "descr": "Testbench uart csrs bus",
             "signals": {
                 "type": params["csr_if"],
-                "prefix": "internal1_uart1_",
+                "prefix": "internal_uart1_",
                 "ADDR_W": 5,
             },
         },
