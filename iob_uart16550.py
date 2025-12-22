@@ -4,7 +4,11 @@
 
 
 def setup(py_params_dict):
+    CSR_IF = py_params_dict["csr_if"] if "csr_if" in py_params_dict else "iob"
+    NAME = py_params_dict["name"] if "name" in py_params_dict else "iob_uart16550"
+
     attributes_dict = {
+        "name": NAME,
         "generate_hw": True,
         "description": "IObundle's adaptation of the UART16550 from https://opencores.org/projects/uart16550.",
         "version": "0.1",
@@ -15,7 +19,7 @@ def setup(py_params_dict):
         "confs": [
             {
                 "name": "ADDR_W",
-                "descr": "Data bus width",
+                "descr": "Address bus width",
                 "type": "P",
                 "val": 5,
             },
@@ -41,8 +45,8 @@ def setup(py_params_dict):
                 "name": "iob_csrs_cbus_s",
                 "descr": "Control and Status Registers interface",
                 "signals": {
-                    "type": "iob",
-                    "ADDR_W": 5,
+                    "type": CSR_IF,
+                    "ADDR_W": "ADDR_W",
                 },
             },
             {
@@ -77,15 +81,28 @@ def setup(py_params_dict):
                     "ADDR_W": "ADDR_W",
                 },
             },
+            {
+                "name": "rs232_internal",
+                "descr": "RS232 interface",
+                "signals": {
+                    "type": "rs232",
+                    "prefix": "internal_",
+                    "N_PINS": 8,
+                },
+            },
         ],
-        #
-        # Blocks
-        #
+    }
+    #
+    # Blocks
+    #
+    attributes_dict |= {
         "subblocks": [
             {
-                "core_name": "iob_iob2wishbone",
-                "instance_name": "iob2wishbone",
-                "instance_description": "IOb to Wishbone converter.",
+                "core_name": "iob_universal_converter",
+                "instance_name": "iob_universal_converter",
+                "instance_description": "Convert CSRs interface into internal wishbone bus",
+                "subordinate_if": CSR_IF,
+                "manager_if": "wb",
                 "parameters": {
                     "ADDR_W": "ADDR_W",
                     "DATA_W": "DATA_W",
@@ -93,13 +110,102 @@ def setup(py_params_dict):
                 },
                 "connect": {
                     "clk_en_rst_s": "clk_en_rst_s",
-                    "iob_s": "iob_csrs_cbus_s",
-                    "wb_m": "internal_uart_cbus",
+                    "s_s": "iob_csrs_cbus_s",
+                    "m_m": "internal_uart_cbus",
                 },
             },
-            {  # Priority encoder for uart_top.v
-                "core_name": "iob_prio_enc",
+            {
+                "core_name": "iob_uart16550_top",
+                "instance_name": "uart_top",
+                "instance_description": "Internal UART16550 core",
+                "connect": {
+                    # "clk_rst_s": "clk_en_rst_s", # Connected automatically?
+                    "wb_s": "internal_uart_cbus",
+                    "rs232_m": "rs232_internal",
+                    "interrupt_o": "interrupt_o",
+                },
+            },
+            {  # Currently used for docs only
+                "core_name": "iob_csrs",
                 "instantiate": False,
+                "instance_name": "iob_csrs",
+                "instance_description": "Control/Status Registers",
+                "autoaddr": False,
+                "csrs": [
+                    {
+                        "name": "rbr_thr_dll",
+                        "addr": 0,
+                        "mode": "RW",
+                        "n_bits": 8,
+                        "rst_val": 0,
+                        "log2n_items": 0,
+                        "descr": "RBR (Receiver Buffer Register) when read, THR (Transmitter Holding Register) when written. When LCR.DLAB bit is set, this address accesses the Divisor Latch LSB (DLL).",
+                    },
+                    {
+                        "name": "ier_dlm",
+                        "addr": 1,
+                        "mode": "RW",
+                        "n_bits": 8,
+                        "rst_val": 0,
+                        "log2n_items": 0,
+                        "descr": "Interrupt Enable Register. When LCR.DLAB bit is set, this address accesses the Divisor Latch MSB (DLM).",
+                    },
+                    {
+                        "name": "iir_fcr",
+                        "addr": 2,
+                        "mode": "RW",
+                        "n_bits": 8,
+                        "rst_val": 0xC1,
+                        "log2n_items": 0,
+                        "descr": "IIR (Interrupt Identification Register) when read, FCR (FIFO Control Register) when written.",
+                    },
+                    {
+                        "name": "lcr",
+                        "addr": 3,
+                        "mode": "RW",
+                        "n_bits": 8,
+                        "rst_val": 3,
+                        "log2n_items": 0,
+                        "descr": "Line Control Register. The DLAB bit (MSB) controls access to the Divisor Latch registers.",
+                    },
+                    {
+                        "name": "mcr",
+                        "addr": 4,
+                        "mode": "W",
+                        "n_bits": 8,
+                        "rst_val": 0,
+                        "log2n_items": 0,
+                        "descr": "Modem Control Register.",
+                    },
+                    {
+                        "name": "lsr",
+                        "addr": 5,
+                        "mode": "R",
+                        "n_bits": 8,
+                        "rst_val": 0x60,
+                        "log2n_items": 0,
+                        "descr": "Line Status Register.",
+                    },
+                    {
+                        "name": "msr",
+                        "addr": 6,
+                        "mode": "R",
+                        "n_bits": 8,
+                        "rst_val": 0,
+                        "log2n_items": 0,
+                        "descr": "Modem Status Register.",
+                    },
+                    # {  # Scratch Register not available in OpenCore's uart16550
+                    #     "name": "scr",
+                    #     "addr": 7,
+                    #     "mode": "RW",
+                    #     "n_bits": 8,
+                    #     "rst_val": 0,
+                    #     "log2n_items": 0,
+                    #     "descr": "Scratch Register.",
+                    # },
+                ],
+                "csr_if": CSR_IF,
             },
         ],
         "superblocks": [
@@ -107,6 +213,7 @@ def setup(py_params_dict):
             {
                 "core_name": "iob_uart16550_sim",
                 "dest_dir": "hardware/simulation/src",
+                "csr_if": CSR_IF,
             },
         ],
         "sw_modules": [
@@ -121,33 +228,15 @@ def setup(py_params_dict):
         "snippets": [
             {
                 "verilog_code": """
-   uart_top uart16550 (
-      .wb_clk_i (clk_i),
-      // WISHBONE interface
-      .wb_rst_i (arst_i),
-
-      .wb_dat_o (internal_wb_dat),
-      .wb_dat_i (internal_wb_datout),
-      .wb_ack_o (internal_wb_ack),
-      .wb_adr_i (internal_wb_adr),
-      .wb_cyc_i (internal_wb_cyc),
-      .wb_sel_i (internal_wb_sel),
-      .wb_stb_i (internal_wb_stb),
-      .wb_we_i  (internal_wb_we),
-      .int_o    (interrupt_o),
-`ifdef UART_HAS_BAUDRATE_OUTPUT
-      .baud1_o  (),
-`endif
-      // UART signals
-      .srx_pad_i(rs232_rxd_i),
-      .stx_pad_o(rs232_txd_o),
-      .rts_pad_o(rs232_rts_o),
-      .cts_pad_i(rs232_cts_i),
-      .dtr_pad_o(),
-      .dsr_pad_i(1'b1),
-      .ri_pad_i (1'b0),
-      .dcd_pad_i(1'b0)
-   );
+      // Assign RS232 interface signals
+      assign internal_rs232_rxd = rs232_rxd_i;
+      assign rs232_txd_o = internal_rs232_txd;
+      assign rs232_rts_o = internal_rs232_rts;
+      assign internal_rs232_cts = rs232_cts_i;
+      // internal_rs232_dtr floating
+      assign internal_rs232_dsr = 1'b1;
+      assign internal_rs232_ri = 1'b0;
+      assign internal_rs232_dcd = 1'b0;
 """
             }
         ],

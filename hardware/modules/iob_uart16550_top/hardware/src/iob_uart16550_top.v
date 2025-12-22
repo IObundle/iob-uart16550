@@ -143,84 +143,17 @@
 
 `include "uart_defines.vh"
 
-module uart_top (
-   wb_clk_i,
-
-   // Wishbone signals
-   wb_rst_i,
-   wb_adr_i,
-   wb_dat_i,
-   wb_dat_o,
-   wb_we_i,
-   wb_stb_i,
-   wb_cyc_i,
-   wb_ack_o,
-   wb_sel_i,
-   int_o,  // interrupt request
-
-   // UART    signals
-   // serial input/output
-   stx_pad_o,
-   srx_pad_i,
-
-`ifdef UART_HAS_BAUDRATE_OUTPUT
-   baud_o,
-`endif
-
-   // modem signals
-   rts_pad_o,
-   cts_pad_i,
-   dtr_pad_o,
-   dsr_pad_i,
-   ri_pad_i,
-   dcd_pad_i
+module iob_uart16550_top (
+   `include "iob_uart16550_top_io.vs"
 );
 
    parameter uart_data_width = `UART_DATA_WIDTH;
    parameter uart_addr_width = `UART_ADDR_WIDTH;
 
-   input wb_clk_i;
-
-   // WISHBONE interface
-   input wb_rst_i;
-   input [uart_addr_width-1:0] wb_adr_i;
-   input [uart_data_width-1:0] wb_dat_i;
-   output [uart_data_width-1:0] wb_dat_o;
-   input wb_we_i;
-   input wb_stb_i;
-   input wb_cyc_i;
-   input [3:0] wb_sel_i;
-   output wb_ack_o;
-   output int_o;
-
-   // UART    signals
-   input srx_pad_i;
-   output stx_pad_o;
-   output rts_pad_o;
-   input cts_pad_i;
-   output dtr_pad_o;
-   input dsr_pad_i;
-   input ri_pad_i;
-   input dcd_pad_i;
-
-   // optional baudrate output
-`ifdef UART_HAS_BAUDRATE_OUTPUT
-   output baud_o;
-`endif
-
-
-   wire                       stx_pad_o;
-   wire                       rts_pad_o;
-   wire                       dtr_pad_o;
-
-   wire [uart_addr_width-1:0] wb_adr_i;
-   wire [uart_data_width-1:0] wb_dat_i;
-   wire [uart_data_width-1:0] wb_dat_o;
-
    wire [                7:0] wb_dat8_i;  // 8-bit internal data input
    wire [                7:0] wb_dat8_o;  // 8-bit internal data output
    wire [               31:0] wb_dat32_o;  // debug interface 32-bit output
-   wire [                3:0] wb_sel_i;  // WISHBONE select signal
+   // wire [                3:0] wb_sel_i;  // WISHBONE select signal
    wire [uart_addr_width-1:0] wb_adr_int;
    wire                       we_o;  // Write enable for registers
    wire                       re_o;  // Read enable for registers
@@ -247,9 +180,9 @@ module uart_top (
 `ifdef DATA_BUS_WIDTH_8
    ////  WISHBONE interface module
    uart_wb wb_interface (
-      .clk       (wb_clk_i),
-      .wb_rst_i  (wb_rst_i),
-      .wb_dat_i  (wb_dat_i),
+      .clk       (clk_i),
+      .wb_rst_i  (arst_i),
+      .wb_dat_i  (wb_datout_i),
       .wb_dat_o  (wb_dat_o),
       .wb_dat8_i (wb_dat8_i),
       .wb_dat8_o (wb_dat8_o),
@@ -266,9 +199,9 @@ module uart_top (
    );
 `else
    uart_wb wb_interface (
-      .clk       (wb_clk_i),
-      .wb_rst_i  (wb_rst_i),
-      .wb_dat_i  (wb_dat_i),
+      .clk       (clk_i),
+      .wb_rst_i  (arst_i),
+      .wb_dat_i  (wb_datout_i),
       .wb_dat_o  (wb_dat_o),
       .wb_dat8_i (wb_dat8_i),
       .wb_dat8_o (wb_dat8_o),
@@ -287,16 +220,16 @@ module uart_top (
 
    // Registers
    uart_regs regs (
-      .clk         (wb_clk_i),
-      .wb_rst_i    (wb_rst_i),
+      .clk         (clk_i),
+      .wb_rst_i    (arst_i),
       .wb_addr_i   (wb_adr_int),
       .wb_dat_i    (wb_dat8_i),
       .wb_dat_o    (wb_dat8_o),
       .wb_we_i     (we_o),
       .wb_re_i     (re_o),
-      .modem_inputs({cts_pad_i, dsr_pad_i, ri_pad_i, dcd_pad_i}),
-      .stx_pad_o   (stx_pad_o),
-      .srx_pad_i   (srx_pad_i),
+      .modem_inputs({rs232_cts_i, rs232_dsr_i, rs232_ri_i, rs232_dcd_i}),
+      .stx_pad_o   (rs232_txd_o),
+      .srx_pad_i   (rs232_rxd_i),
 `ifdef DATA_BUS_WIDTH_8
 `else
       // debug interface signals    enabled
@@ -312,8 +245,8 @@ module uart_top (
       .tstate      (tstate),
       .rstate      (rstate),
 `endif
-      .rts_pad_o   (rts_pad_o),
-      .dtr_pad_o   (dtr_pad_o),
+      .rts_pad_o   (rs232_rts_o),
+      .dtr_pad_o   (rs232_dtr_o),
 `ifdef UART_HAS_BAUDRATE_OUTPUT,
       .baud_o      (baud_o),
 `endif

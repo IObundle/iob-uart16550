@@ -1,0 +1,37 @@
+% SPDX-FileCopyrightText: 2025 IObundle
+%
+% SPDX-License-Identifier: MIT
+
+The core is a fully synchronous design, with a single clock and an asynchronous reset.
+
+\subsection{Operation}
+This UART core is very similar in operation to the standard 16550 UART chip with the
+main exception being that only the FIFO mode is supported. The scratch register is
+removed, as it serves no purpose.
+
+This core can operate in 8-bit data bus mode or in 32-bit bus mode, which is now the
+default mode. The selection between 32- and 8-bits data bus modes is performed by defining DATA\_BUS\_WIDTH\_8 in uart\_defines.v, uart\_top.v or on the compiler/synthesizer tool command line.
+
+In the 32-bit data bus mode a debug interface is present in the system. This interface has 2 32-bit registers that can be read to provide non-intrusive look into the core's registers and other internal values of importance.
+
+\subsection{Initialization}
+Upon reset the core performs the following tasks:
+\begin{itemize}
+\item The receiver and transmitter FIFOs are cleared.
+\item The receiver and transmitter shift registers are cleared
+\item The Divisor Latch register is set to 0.
+\item The Line Control Register is set to communication of 8 bits of data, no parity, 1 stop bit.
+\item All interrupts are disabled in the Interrupt Enable Register.
+\end{itemize}
+
+For proper operation, perform the following:
+\begin{itemize}
+\item Set the Line Control Register to the desired line control parameters. Set bit 7 to `1' to allow access to the Divisor Latches.
+\item Set the Divisor Latches, MSB first, LSB next.
+\item Set bit 7 of LCR to '0' to disable access to Divisor Latches. At this time the transmission engine starts working and data can be sent and received.
+\item Set the FIFO trigger level. Generally, higher trigger level values produce less interrupt to the system, so setting it to 14 bytes is recommended if the system responds fast enough.
+\item Enable desired interrupts by setting appropriate bits in the Interrupt Enable register.
+\end{itemize}
+
+Remember that (Input Clock Speed)/(Divisor Latch value) = 16 x the communication baud rate.
+
