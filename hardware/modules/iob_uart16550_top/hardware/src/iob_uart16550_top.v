@@ -145,78 +145,10 @@
 
 module iob_uart16550_top (
    `include "iob_uart16550_top_io.vs"
-   //    clk_i,
-   // 
-   //    // Wishbone signals
-   //    arst_i,
-   //    wb_adr_i,
-   //    wb_datout_i,
-   //    wb_dat_o,
-   //    wb_we_i,
-   //    wb_stb_i,
-   //    wb_cyc_i,
-   //    wb_ack_o,
-   //    wb_sel_i,
-   //    int_o,  // interrupt request
-   // 
-   //    // UART    signals
-   //    // serial input/output
-   //    rs232_txd_o,
-   //    rs232_rxd_i,
-   // 
-   // `ifdef UART_HAS_BAUDRATE_OUTPUT
-   //    baud_o,
-   // `endif
-   // 
-   //    // modem signals
-   //    rs232_rts_o,
-   //    rs232_cts_i,
-   //    rs232_dtr_o,
-   //    rs232_dsr_i,
-   //    rs232_ri_i,
-   //    rs232_dcd_i
 );
 
    parameter uart_data_width = `UART_DATA_WIDTH;
    parameter uart_addr_width = `UART_ADDR_WIDTH;
-
-   //    input clk_i;
-   // 
-   //    // WISHBONE interface
-   //    input arst_i;
-   //    input [uart_addr_width-1:0] wb_adr_i;
-   //    input [uart_data_width-1:0] wb_datout_i;
-   //    output [uart_data_width-1:0] wb_dat_o;
-   //    input wb_we_i;
-   //    input wb_stb_i;
-   //    input wb_cyc_i;
-   //    input [3:0] wb_sel_i;
-   //    output wb_ack_o;
-   //    output int_o;
-   // 
-   //    // UART    signals
-   //    input rs232_rxd_i;
-   //    output rs232_txd_o;
-   //    output rs232_rts_o;
-   //    input rs232_cts_i;
-   //    output rs232_dtr_o;
-   //    input rs232_dsr_i;
-   //    input rs232_ri_i;
-   //    input rs232_dcd_i;
-   // 
-   //    // optional baudrate output
-   // `ifdef UART_HAS_BAUDRATE_OUTPUT
-   //    output baud_o;
-   // `endif
-
-
-   //wire                       rs232_txd_o;
-   //wire                       rs232_rts_o;
-   //wire                       rs232_dtr_o;
-
-   // wire [uart_addr_width-1:0] wb_adr_i;
-   // wire [uart_data_width-1:0] wb_datout_i;
-   // wire [uart_data_width-1:0] wb_dat_o;
 
    wire [                7:0] wb_dat8_i;  // 8-bit internal data input
    wire [                7:0] wb_dat8_o;  // 8-bit internal data output

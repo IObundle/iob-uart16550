@@ -123,31 +123,6 @@ def setup(py_params_dict):
                     "wb_s": "internal_uart_cbus",
                     "rs232_m": "rs232_internal",
                     "interrupt_o": "interrupt_o",
-                    #       .wb_clk_i (clk_i),
-                    #       // WISHBONE interface
-                    #       .wb_rst_i (arst_i),
-                    #
-                    #       .wb_dat_o (internal_wb_dat),
-                    #       .wb_dat_i (internal_wb_datout),
-                    #       .wb_ack_o (internal_wb_ack),
-                    #       .wb_adr_i (internal_wb_adr),
-                    #       .wb_cyc_i (internal_wb_cyc),
-                    #       .wb_sel_i (internal_wb_sel),
-                    #       .wb_stb_i (internal_wb_stb),
-                    #       .wb_we_i  (internal_wb_we),
-                    #       .int_o    (interrupt_o),
-                    # `ifdef UART_HAS_BAUDRATE_OUTPUT
-                    #       .baud1_o  (),
-                    # `endif
-                    #       // UART signals
-                    #       .srx_pad_i(rs232_rxd_i),
-                    #       .stx_pad_o(rs232_txd_o),
-                    #       .rts_pad_o(rs232_rts_o),
-                    #       .cts_pad_i(rs232_cts_i),
-                    #       .dtr_pad_o(),
-                    #       .dsr_pad_i(1'b1),
-                    #       .ri_pad_i (1'b0),
-                    #       .dcd_pad_i(1'b0)
                 },
             },
             {  # Currently used for docs only
@@ -231,10 +206,6 @@ def setup(py_params_dict):
                     # },
                 ],
                 "csr_if": CSR_IF,
-                # "connect": {
-                #     "clk_en_rst_s": "clk_en_rst_s",
-                #     # 'control_if_m' port connected automatically
-                # },
             },
         ],
         "superblocks": [
@@ -257,35 +228,6 @@ def setup(py_params_dict):
         "snippets": [
             {
                 "verilog_code": """
-//    uart_top uart16550 (
-//       .wb_clk_i (clk_i),
-//       // WISHBONE interface
-//       .wb_rst_i (arst_i),
-// 
-//       .wb_dat_o (internal_wb_dat),
-//       .wb_dat_i (internal_wb_datout),
-//       .wb_ack_o (internal_wb_ack),
-//       .wb_adr_i (internal_wb_adr),
-//       .wb_cyc_i (internal_wb_cyc),
-//       .wb_sel_i (internal_wb_sel),
-//       .wb_stb_i (internal_wb_stb),
-//       .wb_we_i  (internal_wb_we),
-//       .int_o    (interrupt_o),
-// `ifdef UART_HAS_BAUDRATE_OUTPUT
-//       .baud1_o  (),
-// `endif
-//       // UART signals
-//       .srx_pad_i(rs232_rxd_i),
-//       .stx_pad_o(rs232_txd_o),
-//       .rts_pad_o(rs232_rts_o),
-//       .cts_pad_i(rs232_cts_i),
-//       .dtr_pad_o(),
-//       .dsr_pad_i(1'b1),
-//       .ri_pad_i (1'b0),
-//       .dcd_pad_i(1'b0)
-//    );
-
-
       // Assign RS232 interface signals
       assign internal_rs232_rxd = rs232_rxd_i;
       assign rs232_txd_o = internal_rs232_txd;
