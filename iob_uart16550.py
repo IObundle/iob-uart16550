@@ -115,9 +115,9 @@ def setup(py_params_dict):
                 },
             },
             {
-                "core_name": "iob_uart16550_top",
-                "instance_name": "uart_top",
-                "instance_description": "Internal UART16550 core",
+                "core_name": "iob_uart16550_st",
+                "instance_name": "serial_transceiver",
+                "instance_description": "UART16550 Serial Transceiver",
                 "connect": {
                     # "clk_rst_s": "clk_en_rst_s", # Connected automatically?
                     "wb_s": "internal_uart_cbus",

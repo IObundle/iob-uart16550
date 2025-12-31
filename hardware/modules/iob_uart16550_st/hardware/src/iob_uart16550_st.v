@@ -143,43 +143,43 @@
 
 `include "uart_defines.vh"
 
-module iob_uart16550_top (
-   `include "iob_uart16550_top_io.vs"
+module iob_uart16550_st (
+    `include "iob_uart16550_st_io.vs"
 );
 
-   parameter uart_data_width = `UART_DATA_WIDTH;
-   parameter uart_addr_width = `UART_ADDR_WIDTH;
+  parameter uart_data_width = `UART_DATA_WIDTH;
+  parameter uart_addr_width = `UART_ADDR_WIDTH;
 
-   wire [                7:0] wb_dat8_i;  // 8-bit internal data input
-   wire [                7:0] wb_dat8_o;  // 8-bit internal data output
-   wire [               31:0] wb_dat32_o;  // debug interface 32-bit output
-   // wire [                3:0] wb_sel_i;  // WISHBONE select signal
-   wire [uart_addr_width-1:0] wb_adr_int;
-   wire                       we_o;  // Write enable for registers
-   wire                       re_o;  // Read enable for registers
-   //
-   // MODULE INSTANCES
-   //
+  wire [                7:0] wb_dat8_i;  // 8-bit internal data input
+  wire [                7:0] wb_dat8_o;  // 8-bit internal data output
+  wire [               31:0] wb_dat32_o;  // debug interface 32-bit output
+  // wire [                3:0] wb_sel_i;  // WISHBONE select signal
+  wire [uart_addr_width-1:0] wb_adr_int;
+  wire                       we_o;  // Write enable for registers
+  wire                       re_o;  // Read enable for registers
+  //
+  // MODULE INSTANCES
+  //
 
 `ifdef DATA_BUS_WIDTH_8
 `else
-   // debug interface wires
-   wire [                     3:0] ier;
-   wire [                     3:0] iir;
-   wire [                     1:0] fcr;
-   wire [                     4:0] mcr;
-   wire [                     7:0] lcr;
-   wire [                     7:0] msr;
-   wire [                     7:0] lsr;
-   wire [`UART_FIFO_COUNTER_W-1:0] rf_count;
-   wire [`UART_FIFO_COUNTER_W-1:0] tf_count;
-   wire [                     2:0] tstate;
-   wire [                     3:0] rstate;
+  // debug interface wires
+  wire [                     3:0] ier;
+  wire [                     3:0] iir;
+  wire [                     1:0] fcr;
+  wire [                     4:0] mcr;
+  wire [                     7:0] lcr;
+  wire [                     7:0] msr;
+  wire [                     7:0] lsr;
+  wire [`UART_FIFO_COUNTER_W-1:0] rf_count;
+  wire [`UART_FIFO_COUNTER_W-1:0] tf_count;
+  wire [                     2:0] tstate;
+  wire [                     3:0] rstate;
 `endif
 
 `ifdef DATA_BUS_WIDTH_8
-   ////  WISHBONE interface module
-   uart_wb wb_interface (
+  ////  WISHBONE interface module
+  uart_wb wb_interface (
       .clk       (clk_i),
       .wb_rst_i  (arst_i),
       .wb_dat_i  (wb_datout_i),
@@ -196,9 +196,9 @@ module iob_uart16550_top (
       .wb_adr_int(wb_adr_int),
       .we_o      (we_o),
       .re_o      (re_o)
-   );
+  );
 `else
-   uart_wb wb_interface (
+  uart_wb wb_interface (
       .clk       (clk_i),
       .wb_rst_i  (arst_i),
       .wb_dat_i  (wb_datout_i),
@@ -215,11 +215,11 @@ module iob_uart16550_top (
       .wb_adr_int(wb_adr_int),
       .we_o      (we_o),
       .re_o      (re_o)
-   );
+  );
 `endif
 
-   // Registers
-   uart_regs regs (
+  // Registers
+  uart_regs regs (
       .clk         (clk_i),
       .wb_rst_i    (arst_i),
       .wb_addr_i   (wb_adr_int),
@@ -252,11 +252,11 @@ module iob_uart16550_top (
 `endif
       .int_o       (int_o)
 
-   );
+  );
 
 `ifdef DATA_BUS_WIDTH_8
 `else
-   uart_debug_if dbg (  /*AUTOINST*/
+  uart_debug_if dbg (  /*AUTOINST*/
       // Outputs
       .wb_dat32_o(wb_dat32_o[31:0]),
       // Inputs
@@ -272,18 +272,18 @@ module iob_uart16550_top (
       .tf_count  (tf_count[`UART_FIFO_COUNTER_W-1:0]),
       .tstate    (tstate[2:0]),
       .rstate    (rstate[3:0])
-   );
+  );
 `endif
 
-   initial begin
+  initial begin
 `ifdef DATA_BUS_WIDTH_8
-      $display("(%m) UART INFO: Data bus width is 8. No Debug interface.");
+    $display("(%m) UART INFO: Data bus width is 8. No Debug interface.");
 `else
-      $display("(%m) UART INFO: Data bus width is 32. Debug Interface present.");
+    $display("(%m) UART INFO: Data bus width is 32. Debug Interface present.");
 `endif
 `ifdef UART_HAS_BAUDRATE_OUTPUT
-      $display("(%m) UART INFO: Has baudrate output");
+    $display("(%m) UART INFO: Has baudrate output");
 `endif
-   end
+  end
 
 endmodule
