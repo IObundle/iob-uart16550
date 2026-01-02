@@ -46,7 +46,7 @@ def setup(py_params_dict):
                 "descr": "Control and Status Registers interface",
                 "signals": {
                     "type": CSR_IF,
-                    "ADDR_W": "ADDR_W",
+                    "ADDR_W": 5,
                 },
             },
             {
