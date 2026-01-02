@@ -175,7 +175,7 @@ def setup(py_params_dict):
             "csr_if": params["csr_if"],
             "connect": {
                 "clk_en_rst_s": "clk_en_rst_s",
-                "iob_csrs_cbus_s": "uart0_cbus",
+                "csrs_cbus_s": "uart0_cbus",
                 "rs232_m": "uart0_rs232",
                 "interrupt_o": "uart0_interrupt",
             },
@@ -199,7 +199,7 @@ def setup(py_params_dict):
             "csr_if": params["csr_if"],
             "connect": {
                 "clk_en_rst_s": "clk_en_rst_s",
-                "iob_csrs_cbus_s": "uart1_cbus",
+                "csrs_cbus_s": "uart1_cbus",
                 "rs232_m": "uart1_rs232",
                 "interrupt_o": "uart1_interrupt",
             },

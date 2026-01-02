@@ -42,7 +42,7 @@ def setup(py_params_dict):
                 },
             },
             {
-                "name": "iob_csrs_cbus_s",
+                "name": "csrs_cbus_s",
                 "descr": "Control and Status Registers interface",
                 "signals": {
                     "type": CSR_IF,
@@ -110,7 +110,7 @@ def setup(py_params_dict):
                 },
                 "connect": {
                     "clk_en_rst_s": "clk_en_rst_s",
-                    "s_s": "iob_csrs_cbus_s",
+                    "s_s": "csrs_cbus_s",
                     "m_m": "internal_uart_cbus",
                 },
             },
@@ -128,7 +128,7 @@ def setup(py_params_dict):
             {  # Currently used for docs only
                 "core_name": "iob_csrs",
                 "instantiate": False,
-                "instance_name": "iob_csrs",
+                "instance_name": "csrs",
                 "instance_description": "Control/Status Registers",
                 "autoaddr": False,
                 "csrs": [
