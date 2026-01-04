@@ -99,7 +99,7 @@ def setup(py_params_dict):
         "subblocks": [
             {
                 "core_name": "iob_universal_converter",
-                "instance_name": "iob_universal_converter",
+                "instance_name": "universal_converter",
                 "instance_description": "Convert CSRs interface into internal wishbone bus",
                 "subordinate_if": CSR_IF,
                 "manager_if": "wb",
