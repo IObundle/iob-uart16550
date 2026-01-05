@@ -42,11 +42,11 @@ def setup(py_params_dict):
                 },
             },
             {
-                "name": "iob_csrs_cbus_s",
+                "name": "csrs_cbus_s",
                 "descr": "Control and Status Registers interface",
                 "signals": {
                     "type": CSR_IF,
-                    "ADDR_W": "ADDR_W",
+                    "ADDR_W": 5,
                 },
             },
             {
@@ -99,7 +99,7 @@ def setup(py_params_dict):
         "subblocks": [
             {
                 "core_name": "iob_universal_converter",
-                "instance_name": "iob_universal_converter",
+                "instance_name": "universal_converter",
                 "instance_description": "Convert CSRs interface into internal wishbone bus",
                 "subordinate_if": CSR_IF,
                 "manager_if": "wb",
@@ -110,14 +110,14 @@ def setup(py_params_dict):
                 },
                 "connect": {
                     "clk_en_rst_s": "clk_en_rst_s",
-                    "s_s": "iob_csrs_cbus_s",
+                    "s_s": "csrs_cbus_s",
                     "m_m": "internal_uart_cbus",
                 },
             },
             {
-                "core_name": "iob_uart16550_top",
-                "instance_name": "uart_top",
-                "instance_description": "Internal UART16550 core",
+                "core_name": "iob_uart16550_st",
+                "instance_name": "serial_transceiver",
+                "instance_description": "UART16550 Serial Transceiver",
                 "connect": {
                     # "clk_rst_s": "clk_en_rst_s", # Connected automatically?
                     "wb_s": "internal_uart_cbus",
@@ -128,7 +128,7 @@ def setup(py_params_dict):
             {  # Currently used for docs only
                 "core_name": "iob_csrs",
                 "instantiate": False,
-                "instance_name": "iob_csrs",
+                "instance_name": "csrs",
                 "instance_description": "Control/Status Registers",
                 "autoaddr": False,
                 "csrs": [
