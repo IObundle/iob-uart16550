@@ -7,6 +7,12 @@ def setup(py_params_dict):
     CSR_IF = py_params_dict["csr_if"] if "csr_if" in py_params_dict else "iob"
     NAME = py_params_dict["name"] if "name" in py_params_dict else "iob_uart16550"
 
+    IF_DISPLAY_NAME = {
+        "iob": "IOb",
+        "axil": "AXI-Lite",
+        "wb": "Wishbone",
+    }
+
     attributes_dict = {
         "name": NAME,
         "generate_hw": True,
@@ -43,7 +49,7 @@ def setup(py_params_dict):
             },
             {
                 "name": "csrs_cbus_s",
-                "descr": "Control and Status Registers interface",
+                "descr": f"Control and status interface, when selecting the {IF_DISPLAY_NAME[CSR_IF]} CSR interface.",
                 "signals": {
                     "type": CSR_IF,
                     "ADDR_W": 5,
@@ -68,9 +74,28 @@ def setup(py_params_dict):
                 ],
             },
         ],
-        #
-        # Wires
-        #
+    }
+    # Document all supported CSR interfaces
+    for supported_if in ["iob", "axil", "wb"]:
+        # CSR_IF has already been documented previously. Only document other supported interfaces.
+        if CSR_IF != supported_if:
+            attributes_dict["ports"].insert(
+                2,
+                {
+                    "name": f"csrs_cbus_{supported_if}_s",
+                    "doc_only": True,
+                    "descr": f"Control and status interface, when selecting the {IF_DISPLAY_NAME[supported_if]} CSR interface.",
+                    "signals": {
+                        "type": supported_if,
+                        "ADDR_W": 5,
+                    },
+                },
+            )
+
+    #
+    # Wires
+    #
+    attributes_dict |= {
         "wires": [
             {
                 "name": "internal_uart_cbus",
