@@ -53,6 +53,8 @@ def setup(py_params_dict):
                 "signals": {
                     "type": CSR_IF,
                     "ADDR_W": 5,
+                    "DATA_W": 32,
+                    "STRB_W": 4,
                 },
             },
             {
@@ -88,6 +90,8 @@ def setup(py_params_dict):
                     "signals": {
                         "type": supported_if,
                         "ADDR_W": 5,
+                        "DATA_W": 32,
+                        "STRB_W": 4,
                     },
                 },
             )
