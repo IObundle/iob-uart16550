@@ -4,8 +4,9 @@
 
 
 def setup(py_params_dict):
-    CSR_IF = py_params_dict["csr_if"] if "csr_if" in py_params_dict else "iob"
-    NAME = py_params_dict["name"] if "name" in py_params_dict else "iob_uart16550"
+    CSR_IF = py_params_dict.get("csr_if", "iob")
+    NAME = py_params_dict.get("name", "iob_uart16550")
+    PLIC_SOURCE_ID = py_params_dict.get("plic_source_id", 1)
 
     IF_DISPLAY_NAME = {
         "iob": "IOb",
@@ -252,6 +253,16 @@ def setup(py_params_dict):
             },
             {
                 "core_name": "iob_linux_device_drivers",
+                "compatible_str": "ns16550a",
+                # Extra device tree properties specific to this peripheral
+                "dts_extra_properties": f"""
+        clock-frequency = </*FREQ_MACRO*/>; // UART clock frequency
+        current-speed = </*BAUD_MACRO*/>; // Initial baud rate
+        interrupt-parent = < &PLIC0 >; // PLIC phandle (matches PLIC peripheral name in system's DT)
+        interrupts = <{PLIC_SOURCE_ID}>; // PLIC source ID
+        // reg-shift = <0>; // 2**0 = 1‑byte spacing between sequential registers (same as driver default)
+        // reg-io-width = <1>; // 8‑bit reads/writes (same as driver default)
+""",
             },
         ],
         #
