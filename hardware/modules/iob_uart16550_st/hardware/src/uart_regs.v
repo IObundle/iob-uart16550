@@ -370,12 +370,8 @@ module uart_regs (
    assign loopback = mcr[4];
 
    // assign modem outputs
-   //assign rts_pad_o                                   = ~mcr[`UART_MC_RTS];
+   assign rts_pad_o = ~mcr[`UART_MC_RTS];
    assign dtr_pad_o = ~mcr[`UART_MC_DTR];
-
-   wire rf_overrun;
-   // RTS mod: This signal is now controlled purely by hardware.
-   assign rts_pad_o = ~rf_overrun;  //TODO: Maybe use ~FIFO_FULL instead?
 
    // Interrupt signals
    wire rls_int;  // receiver line status interrupt
@@ -403,19 +399,17 @@ module uart_regs (
    wire serial_out;
 
    uart_transmitter transmitter (
-      .clk      (clk),
-      .wb_rst_i (wb_rst_i),
-      .lcr      (lcr),
-      .tf_push  (tf_push),
-      .wb_dat_i (wb_dat_i),
-      //.enable   (enable),
-      // CTS mod: Transmitter only works when CTS is high (controlled purely by hardware)
-      .enable   (enable && cts_pad_i),
-      .tx_reset (tx_reset),
-      .lsr_mask (lsr_mask),
-      .stx_pad_o(serial_out),
-      .tstate   (tstate),
-      .tf_count (tf_count)
+       .clk      (clk),
+       .wb_rst_i (wb_rst_i),
+       .lcr      (lcr),
+       .tf_push  (tf_push),
+       .wb_dat_i (wb_dat_i),
+       .enable   (enable),
+       .tx_reset (tx_reset),
+       .lsr_mask (lsr_mask),
+       .stx_pad_o(serial_out),
+       .tstate   (tstate),
+       .tf_count (tf_count)
    );
 
    // Synchronizing and sampling serial RX input
@@ -424,37 +418,38 @@ module uart_regs (
       .width     (1),
       .init_value(1'b1)
    ) i_uart_sync_flops (
-      .rst_i          (wb_rst_i),
-      .clk_i          (clk),
-      .stage1_rst_i   (1'b0),
-      .stage1_clk_en_i(1'b1),
-      .async_dat_i    (srx_pad_i),
-      .sync_dat_o     (srx_pad)
+       .rst_i          (wb_rst_i),
+       .clk_i          (clk),
+       .stage1_rst_i   (1'b0),
+       .stage1_clk_en_i(1'b1),
+       .async_dat_i    (srx_pad_i),
+       .sync_dat_o     (srx_pad)
    );
 
    // handle loopback
    wire serial_in = loopback ? serial_out : srx_pad;
    assign stx_pad_o = loopback ? 1'b1 : serial_out;
 
+   wire rf_overrun;
    wire rf_push_pulse;
 
    // Receiver Instance
    uart_receiver receiver (
-      .clk          (clk),
-      .wb_rst_i     (wb_rst_i),
-      .lcr          (lcr),
-      .rf_pop       (rf_pop),
-      .srx_pad_i    (serial_in),
-      .enable       (enable),
-      .rx_reset     (rx_reset),
-      .lsr_mask     (lsr_mask),
-      .counter_t    (counter_t),
-      .rf_count     (rf_count),
-      .rf_data_out  (rf_data_out),
-      .rf_overrun   (rf_overrun),
-      .rf_error_bit (rf_error_bit),
-      .rstate       (rstate),
-      .rf_push_pulse(rf_push_pulse)
+       .clk          (clk),
+       .wb_rst_i     (wb_rst_i),
+       .lcr          (lcr),
+       .rf_pop       (rf_pop),
+       .srx_pad_i    (serial_in),
+       .enable       (enable),
+       .rx_reset     (rx_reset),
+       .lsr_mask     (lsr_mask),
+       .counter_t    (counter_t),
+       .rf_count     (rf_count),
+       .rf_data_out  (rf_data_out),
+       .rf_overrun   (rf_overrun),
+       .rf_error_bit (rf_error_bit),
+       .rstate       (rstate),
+       .rf_push_pulse(rf_push_pulse)
    );
 
 
