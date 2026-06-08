@@ -228,8 +228,8 @@ def setup(py_params_dict):
             "verilog_code": """
         assign uart1_rs232_rxd = uart0_rs232_txd;
         assign uart0_rs232_rxd = uart1_rs232_txd;
-        assign uart0_rs232_cts = 1'b1;
-        assign uart1_rs232_cts = 1'b1;
+        assign uart0_rs232_cts = 1'b0;
+        assign uart1_rs232_cts = 1'b0;
             """,
         },
     ]
