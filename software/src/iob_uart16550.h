@@ -84,6 +84,7 @@
  *
  * Reset UART16550, set IOb-UART16550 base address and set the division factor.
  * The division factor is the number of clock cycles per symbol transfered.
+ * RTS is asserted by default so the remote device can send data.
  *
  * For example, for a case with fclk = 100 Mhz for a baudrate of 115200 we
  * should have `div=(100*10^6/115200) = (868)`.
@@ -185,6 +186,49 @@ void uart16550_sendfile(char *file_name, int file_size, char *mem);
  * @return received byte from UART16550.
  */
 char uart16550_getc();
+
+// FLOW CONTROL / MODEM FUNCTIONS
+
+/** @brief Assert or de-assert RTS (Request To Send).
+ *
+ * When asserted (1), signals the remote device that we are ready to receive
+ * data. RTS is asserted by default after uart16550_init().
+ *
+ * @param assert 1 to assert, 0 to de-assert.
+ * @return void.
+ */
+void uart16550_set_rts(int assert);
+
+/** @brief Read CTS (Clear To Send) signal status.
+ *
+ * Reads the modem status register and returns the complement of the CTS
+ * input. Returns 1 when the remote device is ready to receive data.
+ *
+ * @return 1 if CTS is asserted, 0 otherwise.
+ */
+int uart16550_get_cts();
+
+/** @brief Read full Modem Status Register.
+ *
+ * Returns the raw 8-bit MSR value.
+ *
+ * @return MSR register value.
+ */
+uint8_t uart16550_get_msr();
+
+/** @brief Enable hardware flow control.
+ *
+ * When enabled, uart16550_putc() will wait for CTS to be asserted before
+ * transmitting each byte. RTS is also asserted automatically.
+ */
+void uart16550_flow_ctrl_enable();
+
+/** @brief Disable hardware flow control.
+ *
+ * uart16550_putc() reverts to original behavior (no CTS check).
+ * Does not de-assert RTS.
+ */
+void uart16550_flow_ctrl_disable();
 
 /** @brief Receive file.
  *
