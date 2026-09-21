@@ -5,8 +5,8 @@
 { pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/25.05.tar.gz") {} }:
 
 let
-  py2hwsw_commit = "ec1a6475b3b749fde5a881a6a70ec3639b737eed"; # Replace with the desired commit.
-  py2hwsw_sha256 = "yZXuQhyqcw3TwF9xqBEbOR11LXKqEe0LcddRW0U731o="; # Replace with the actual SHA256 hash.
+  py2hwsw_commit = "7fdbc6d8ee83e8d43470f7d39df21de824dadd94"; # Replace with the desired commit.
+  py2hwsw_sha256 = "vQBJF1ZqvD3SguF1RNBYgKbPSQZ1xDKjOk0mP9Hg8yU="; # Replace with the actual SHA256 hash.
   # Get local py2hwsw root from `PY2HWSW_ROOT` env variable
   py2hwswRoot = builtins.getEnv "PY2HWSW_ROOT";
 
