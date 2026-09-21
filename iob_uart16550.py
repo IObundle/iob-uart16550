@@ -128,7 +128,7 @@ def setup(py_params_dict):
     attributes_dict |= {
         "subblocks": [
             {
-                "core_name": "iob_universal_converter",
+                "core": "iob_universal_converter",
                 "instance_name": "universal_converter",
                 "instance_description": "Convert CSRs interface into internal wishbone bus",
                 "subordinate_if": CSR_IF,
@@ -145,7 +145,7 @@ def setup(py_params_dict):
                 },
             },
             {
-                "core_name": "iob_uart16550_st",
+                "core": "iob_uart16550_st",
                 "instance_name": "serial_transceiver",
                 "instance_description": "UART16550 Serial Transceiver",
                 "connect": {
@@ -156,7 +156,7 @@ def setup(py_params_dict):
                 },
             },
             {  # Currently used for docs only
-                "core_name": "iob_csrs",
+                "core": "iob_csrs",
                 "instantiate": False,
                 "instance_name": "csrs",
                 "instance_description": "Control/Status Registers",
@@ -241,18 +241,18 @@ def setup(py_params_dict):
         "superblocks": [
             # Simulation wrapper
             {
-                "core_name": "iob_uart16550_sim",
+                "core": "iob_uart16550_sim",
                 "dest_dir": "hardware/simulation/src",
                 "csr_if": CSR_IF,
             },
         ],
         "sw_modules": [
             {
-                "core_name": "iob_coverage_analyze",
+                "core": "iob_coverage_analyze",
                 "instance_name": "iob_coverage_analyze_inst",
             },
             {
-                "core_name": "iob_linux_device_drivers",
+                "core": "iob_linux_device_drivers",
                 "compatible_str": "ns16550a",
                 # Extra device tree properties specific to this peripheral
                 "dts_extra_properties": f"""
