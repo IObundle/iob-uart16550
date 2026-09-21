@@ -58,7 +58,7 @@ def setup(py_params_dict):
         ],
         "subblocks": [
             {
-                "core_name": "iob_prio_enc",
+                "core": "iob_prio_enc",
                 "instantiate": False,
             },
         ],

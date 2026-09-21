@@ -8,6 +8,8 @@
 #include <stdint.h>
 
 static int base;
+static uint8_t mcr_cache;
+static int flow_ctrl_enabled;
 
 // TX FUNCTIONS
 void uart16550_txwait() {
@@ -23,6 +25,9 @@ char uart16550_txready() {
 
 void uart16550_putc(char c) {
   uart16550_txwait();
+  if (flow_ctrl_enabled)
+    while (!uart16550_get_cts())
+      ;
   *((volatile uint8_t *)(base)) = c;
 }
 
@@ -76,6 +81,11 @@ void uart16550_init(int base_address, uint16_t div) {
   // Enable desired interrupts by setting appropriate bits in the Interrupt
   // Enable register.
   *((volatile uint8_t *)(base + 1)) = 0x03;
+
+  // Assert RTS so the remote can send data.
+  uart16550_set_rts(1);
+
+  flow_ctrl_enabled = 0;
 }
 
 // Change UART base
@@ -175,4 +185,31 @@ void uart16550_sendfile(char *file_name, int file_size, char *mem) {
 
   uart16550_puts(UART_PROGNAME);
   uart16550_puts(": file sent\n");
+}
+
+// FLOW CONTROL / MODEM FUNCTIONS
+void uart16550_set_rts(int assert) {
+  if (assert)
+    mcr_cache |= (1 << 1);
+  else
+    mcr_cache &= ~(1 << 1);
+  *((volatile uint8_t *)(base + 4)) = mcr_cache;
+}
+
+int uart16550_get_cts() {
+  uint8_t msr = *((volatile uint8_t *)(base + 6));
+  return (msr >> 4) & 1;
+}
+
+uint8_t uart16550_get_msr() {
+  return *((volatile uint8_t *)(base + 6));
+}
+
+void uart16550_flow_ctrl_enable() {
+  uart16550_set_rts(1);
+  flow_ctrl_enabled = 1;
+}
+
+void uart16550_flow_ctrl_disable() {
+  flow_ctrl_enabled = 0;
 }

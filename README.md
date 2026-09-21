@@ -10,11 +10,9 @@ This is an adaptation of the UART16550 at https://opencores.org/projects/uart165
 
 Note: This version has a FIFO with [256 bytes](https://github.com/IObundle/iob-uart16550/blob/master/hardware/src/uart_defines.vh#L231).
 
-Note: This version was modified to use a dedicated hardware based control of RTS/CTS signals (software control of these signals is ignored). Therefore, the software should have hardware flow control disabled to avoid issues.
-
 ## How to build the core with Py2HWSW ##
 The [Py2HWSW](https://nlnet.nl/project/Py2HWSW/) workflow allows to automatically generate verilog components used by the projects core Verilog. It allows to create bus interfaces with ease and use existing Verilog modules.
-To use Py2HWSW the project should have a *core_name*.py file in the root directory.
+To use Py2HWSW the project should have a *core*.py file in the root directory.
 The main commands to use the Py2HWSW workflow are:
 - `make setup`: creates a build directory in the projects parent directory.
 - `make clean`: removes the build directory.

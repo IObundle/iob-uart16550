@@ -157,7 +157,7 @@ def setup(py_params_dict):
         converter_connect1["clk_en_rst_s"] = "clk_en_rst_s"
     attributes_dict["subblocks"] = [
         {
-            "core_name": "iob_universal_converter",
+            "core": "iob_universal_converter",
             "instance_name": "iob_universal_converter0",
             "instance_description": "Convert IOb port from testbench into correct interface for UART CSRs bus",
             "subordinate_if": "iob",
@@ -169,7 +169,7 @@ def setup(py_params_dict):
             "connect": converter_connect0,
         },
         {
-            "core_name": "iob_uart16550",
+            "core": "iob_uart16550",
             "instance_name": "uart16550_inst0",
             "instance_description": "Unit Under Test (UUT) UART16550 instance 0.",
             "csr_if": params["csr_if"],
@@ -181,7 +181,7 @@ def setup(py_params_dict):
             },
         },
         {
-            "core_name": "iob_universal_converter",
+            "core": "iob_universal_converter",
             "instance_name": "iob_universal_converter1",
             "instance_description": "Convert IOb port from testbench into correct interface for UART CSRs bus",
             "subordinate_if": "iob",
@@ -193,7 +193,7 @@ def setup(py_params_dict):
             "connect": converter_connect1,
         },
         {
-            "core_name": "iob_uart16550",
+            "core": "iob_uart16550",
             "instance_name": "uart16550_inst1",
             "instance_description": "Unit Under Test (UUT) UART16550 instance 1.",
             "csr_if": params["csr_if"],
@@ -205,7 +205,7 @@ def setup(py_params_dict):
             },
         },
         {
-            "core_name": "iob_split",
+            "core": "iob_split",
             "name": "tb_pbus_split",
             "instance_name": "iob_pbus_split",
             "instance_description": "Split between testbench peripherals",
@@ -228,8 +228,8 @@ def setup(py_params_dict):
             "verilog_code": """
         assign uart1_rs232_rxd = uart0_rs232_txd;
         assign uart0_rs232_rxd = uart1_rs232_txd;
-        assign uart0_rs232_cts = 1'b1;
-        assign uart1_rs232_cts = 1'b1;
+        assign uart0_rs232_cts = 1'b0;
+        assign uart1_rs232_cts = 1'b0;
             """,
         },
     ]
