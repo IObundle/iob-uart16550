@@ -26,7 +26,7 @@ def setup(py_params_dict):
             "name": "ADDR_W",
             "descr": "Data bus width",
             "type": "P",
-            "val": 6,  # 2x UART16550 registers
+            "val": 8,  # 2x UART16550 registers (split needs ADDR_W=8 for 7-bit outputs)
         },
         {
             "name": "DATA_W",
@@ -51,7 +51,7 @@ def setup(py_params_dict):
             "descr": "Testbench UART16550 sim wrapper csrs interface",
             "signals": {
                 "type": "iob",
-                "ADDR_W": 6,
+                "ADDR_W": 8,
             },
         },
     ]
@@ -73,7 +73,7 @@ def setup(py_params_dict):
             "signals": {
                 "type": "iob",
                 "prefix": "uart16550_0_csrs_",
-                "ADDR_W": 5,
+                "ADDR_W": 7,
             },
         },
         {
@@ -82,7 +82,7 @@ def setup(py_params_dict):
             "signals": {
                 "type": params["csr_if"],
                 "prefix": "internal_uart0_",
-                "ADDR_W": 5,
+                "ADDR_W": 7,
             },
         },
         {
@@ -110,7 +110,7 @@ def setup(py_params_dict):
             "signals": {
                 "type": "iob",
                 "prefix": "uart16550_1_csrs_",
-                "ADDR_W": 5,
+                "ADDR_W": 7,
             },
         },
         {
@@ -119,7 +119,7 @@ def setup(py_params_dict):
             "signals": {
                 "type": params["csr_if"],
                 "prefix": "internal_uart1_",
-                "ADDR_W": 5,
+                "ADDR_W": 7,
             },
         },
         {
@@ -163,8 +163,9 @@ def setup(py_params_dict):
             "subordinate_if": "iob",
             "manager_if": params["csr_if"],
             "parameters": {
-                "ADDR_W": 5,
+                "ADDR_W": 7,
                 "DATA_W": "DATA_W",
+                "ADDR_SHIFT": 0,
             },
             "connect": converter_connect0,
         },
@@ -187,8 +188,9 @@ def setup(py_params_dict):
             "subordinate_if": "iob",
             "manager_if": params["csr_if"],
             "parameters": {
-                "ADDR_W": 5,
+                "ADDR_W": 7,
                 "DATA_W": "DATA_W",
+                "ADDR_SHIFT": 0,
             },
             "connect": converter_connect1,
         },
@@ -217,7 +219,7 @@ def setup(py_params_dict):
                 "m_1_m": "uart1_csrs",
             },
             "num_managers": 2,
-            "addr_w": 6,
+            "addr_w": 8,
         },
     ]
     #

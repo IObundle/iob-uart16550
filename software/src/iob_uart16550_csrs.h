@@ -22,7 +22,7 @@
  * @def IOB_UART16550_CSRS_CSRS_ADDR_W
  * @brief Address width required to access all CSRs in UART16550.
  */
-#define IOB_UART16550_CSRS_CSRS_ADDR_W 5
+#define IOB_UART16550_CSRS_CSRS_ADDR_W 7
 
 // Addresses
 /**
@@ -83,16 +83,16 @@
  */
 #define IOB_UART16550_CSRS_RB_ADDR (0)   // Receiver buffer
 #define IOB_UART16550_CSRS_TR_ADDR (0)   // Transmitter
-#define IOB_UART16550_CSRS_IE_ADDR (1)   // Interrupt enable
-#define IOB_UART16550_CSRS_II_ADDR (2)   // Interrupt identification
-#define IOB_UART16550_CSRS_FC_ADDR (2)   // FIFO control
-#define IOB_UART16550_CSRS_LC_ADDR (3)   // Line control
-#define IOB_UART16550_CSRS_MC_ADDR (4)   // Modem control
-#define IOB_UART16550_CSRS_LS_ADDR (5)   // Line status
-#define IOB_UART16550_CSRS_MS_ADDR (6)   // Modem status
-#define IOB_UART16550_CSRS_SR_ADDR (7)   // Scratch register
+#define IOB_UART16550_CSRS_IE_ADDR (4)   // Interrupt enable
+#define IOB_UART16550_CSRS_II_ADDR (8)   // Interrupt identification
+#define IOB_UART16550_CSRS_FC_ADDR (8)   // FIFO control
+#define IOB_UART16550_CSRS_LC_ADDR (12)  // Line control
+#define IOB_UART16550_CSRS_MC_ADDR (16)  // Modem control
+#define IOB_UART16550_CSRS_LS_ADDR (20)  // Line status
+#define IOB_UART16550_CSRS_MS_ADDR (24)  // Modem status
+#define IOB_UART16550_CSRS_SR_ADDR (28)  // Scratch register
 #define IOB_UART16550_CSRS_DL1_ADDR (0)  // Divisor latch bytes (1)
-#define IOB_UART16550_CSRS_DL2_ADDR (1)  // Divisor latch bytes (2)
+#define IOB_UART16550_CSRS_DL2_ADDR (4)  // Divisor latch bytes (2)
 #define IOB_UART16550_CSRS_DB1_ADDR (8)  // Debug register 1
 #define IOB_UART16550_CSRS_DB2_ADDR (12) // Debug register 2
 
