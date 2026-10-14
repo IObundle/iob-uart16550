@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define UART16550_ADDR_W (5)
+#define UART16550_ADDR_W (7)
 #define UART0_BASE (0)
 #define UART1_BASE (1 << UART16550_ADDR_W)
 

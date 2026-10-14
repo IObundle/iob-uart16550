@@ -19,7 +19,7 @@ void uart16550_txwait() {
 
 char uart16550_txready() {
   uint8_t status = 0;
-  status = *((volatile uint8_t *)(base + 5));
+  status = *((volatile uint8_t *)(base + 20));
   return (status & (0x01 << 6));
 }
 
@@ -39,7 +39,7 @@ void uart16550_rxwait() {
 
 char uart16550_rxready() {
   uint8_t status = 0;
-  status = *((volatile uint8_t *)(base + 5));
+  status = *((volatile uint8_t *)(base + 20));
   return (status & (0x01));
 }
 
@@ -56,31 +56,31 @@ void uart16550_init(int base_address, uint16_t div) {
   base = base_address;
 
   // Set the Line Control Register to the desired line control parameters.
-  // Set bit 7 to ‘1’ to allow access to the Divisor Latches.
+  // Set bit 7 to '1' to allow access to the Divisor Latches.
   uint8_t lcr = 0;
-  lcr = *((volatile uint8_t *)(base + 3));
+  lcr = *((volatile uint8_t *)(base + 12));
   lcr = (lcr | 0x80);
-  *((volatile uint8_t *)(base + 3)) = lcr;
+  *((volatile uint8_t *)(base + 12)) = lcr;
 
   // Set the Divisor Latches, MSB first, LSB next.
   uint8_t *dl = (uint8_t *)&div;
-  *((volatile uint8_t *)(base + 1)) = *(dl + 1);
-  *((volatile uint8_t *)(base)) = *(dl);
+  *((volatile uint8_t *)(base + 4)) = *(dl + 1);
+  *((volatile uint8_t *)(base + 0)) = *(dl);
 
-  // Set bit 7 of LCR to ‘0’ to disable access to Divisor Latches.
+  // Set bit 7 of LCR to '0' to disable access to Divisor Latches.
   // At this time the transmission engine starts working and data can be sent
   // and received.
   lcr = (lcr & 0x7F);
-  *((volatile uint8_t *)(base + 3)) = lcr;
+  *((volatile uint8_t *)(base + 12)) = lcr;
 
   // Set the FIFO trigger level. Generally, higher trigger level values produce
   // less interrupt to the system, so setting it to 14 bytes is recommended if
   // the system responds fast enough.
-  *((volatile uint8_t *)(base + 2)) = 0xC0;
+  *((volatile uint8_t *)(base + 8)) = 0xC0;
 
   // Enable desired interrupts by setting appropriate bits in the Interrupt
   // Enable register.
-  *((volatile uint8_t *)(base + 1)) = 0x03;
+  *((volatile uint8_t *)(base + 4)) = 0x03;
 
   // Assert RTS so the remote can send data.
   uart16550_set_rts(1);
@@ -193,23 +193,19 @@ void uart16550_set_rts(int assert) {
     mcr_cache |= (1 << 1);
   else
     mcr_cache &= ~(1 << 1);
-  *((volatile uint8_t *)(base + 4)) = mcr_cache;
+  *((volatile uint8_t *)(base + 16)) = mcr_cache;
 }
 
 int uart16550_get_cts() {
-  uint8_t msr = *((volatile uint8_t *)(base + 6));
+  uint8_t msr = *((volatile uint8_t *)(base + 24));
   return (msr >> 4) & 1;
 }
 
-uint8_t uart16550_get_msr() {
-  return *((volatile uint8_t *)(base + 6));
-}
+uint8_t uart16550_get_msr() { return *((volatile uint8_t *)(base + 24)); }
 
 void uart16550_flow_ctrl_enable() {
   uart16550_set_rts(1);
   flow_ctrl_enabled = 1;
 }
 
-void uart16550_flow_ctrl_disable() {
-  flow_ctrl_enabled = 0;
-}
+void uart16550_flow_ctrl_disable() { flow_ctrl_enabled = 0; }

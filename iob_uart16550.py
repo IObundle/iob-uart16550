@@ -28,13 +28,19 @@ def setup(py_params_dict):
                 "name": "ADDR_W",
                 "descr": "Address bus width",
                 "type": "P",
-                "val": 5,
+                "val": 7,
             },
             {
                 "name": "DATA_W",
                 "descr": "Data bus width",
                 "type": "P",
                 "val": 32,
+            },
+            {
+                "name": "ADDR_SHIFT",
+                "descr": "Address shift for stride conversion",
+                "type": "P",
+                "val": 2,
             },
         ],
         #
@@ -53,7 +59,7 @@ def setup(py_params_dict):
                 "descr": f"Control and status interface, when selecting the {IF_DISPLAY_NAME[CSR_IF]} CSR interface.",
                 "signals": {
                     "type": CSR_IF,
-                    "ADDR_W": 5,
+                    "ADDR_W": 7,
                     "DATA_W": 32,
                     "STRB_W": 4,
                 },
@@ -90,7 +96,7 @@ def setup(py_params_dict):
                     "descr": f"Control and status interface, when selecting the {IF_DISPLAY_NAME[supported_if]} CSR interface.",
                     "signals": {
                         "type": supported_if,
-                        "ADDR_W": 5,
+                        "ADDR_W": 7,
                         "DATA_W": 32,
                         "STRB_W": 4,
                     },
@@ -108,7 +114,7 @@ def setup(py_params_dict):
                 "signals": {
                     "type": "wb",
                     "prefix": "internal_",
-                    "ADDR_W": "ADDR_W",
+                    "ADDR_W": "ADDR_W - ADDR_SHIFT",
                 },
             },
             {
@@ -136,7 +142,8 @@ def setup(py_params_dict):
                 "parameters": {
                     "ADDR_W": "ADDR_W",
                     "DATA_W": "DATA_W",
-                    "READ_BYTES": 1,
+                    "READ_BYTES": 4,
+                    "ADDR_SHIFT": 2,
                 },
                 "connect": {
                     "clk_en_rst_s": "clk_en_rst_s",
@@ -173,7 +180,7 @@ def setup(py_params_dict):
                     },
                     {
                         "name": "ier_dlm",
-                        "addr": 1,
+                        "addr": 4,
                         "mode": "RW",
                         "n_bits": 8,
                         "rst_val": 0,
@@ -182,7 +189,7 @@ def setup(py_params_dict):
                     },
                     {
                         "name": "iir_fcr",
-                        "addr": 2,
+                        "addr": 8,
                         "mode": "RW",
                         "n_bits": 8,
                         "rst_val": 0xC1,
@@ -191,7 +198,7 @@ def setup(py_params_dict):
                     },
                     {
                         "name": "lcr",
-                        "addr": 3,
+                        "addr": 12,
                         "mode": "RW",
                         "n_bits": 8,
                         "rst_val": 3,
@@ -200,7 +207,7 @@ def setup(py_params_dict):
                     },
                     {
                         "name": "mcr",
-                        "addr": 4,
+                        "addr": 16,
                         "mode": "W",
                         "n_bits": 8,
                         "rst_val": 0,
@@ -209,7 +216,7 @@ def setup(py_params_dict):
                     },
                     {
                         "name": "lsr",
-                        "addr": 5,
+                        "addr": 20,
                         "mode": "R",
                         "n_bits": 8,
                         "rst_val": 0x60,
@@ -218,7 +225,7 @@ def setup(py_params_dict):
                     },
                     {
                         "name": "msr",
-                        "addr": 6,
+                        "addr": 24,
                         "mode": "R",
                         "n_bits": 8,
                         "rst_val": 0,
@@ -234,6 +241,15 @@ def setup(py_params_dict):
                     #     "log2n_items": 0,
                     #     "descr": "Scratch Register.",
                     # },
+                    {
+                        "name": "version",
+                        "addr": 28,
+                        "mode": "R",
+                        "n_bits": 24,
+                        "rst_val": 0x000105,
+                        "log2n_items": 0,
+                        "descr": "Version register.",
+                    },
                 ],
                 "csr_if": CSR_IF,
             },
@@ -260,8 +276,8 @@ def setup(py_params_dict):
         current-speed = </*BAUD_MACRO*/>; // Initial baud rate
         interrupt-parent = < &PLIC0 >; // PLIC phandle (matches PLIC peripheral name in system's DT)
         interrupts = <{PLIC_SOURCE_ID}>; // PLIC source ID
-        // reg-shift = <0>; // 2**0 = 1‑byte spacing between sequential registers (same as driver default)
-        // reg-io-width = <1>; // 8‑bit reads/writes (same as driver default)
+        reg-shift = <2>; // 2**2 = 4-byte spacing between sequential registers
+        reg-io-width = <4>; // 32-bit reads/writes
 """,
             },
         ],
